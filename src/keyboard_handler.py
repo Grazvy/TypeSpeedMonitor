@@ -36,8 +36,9 @@ class KeyboardHandler:
     def load_current_bin(self):
         if self.current_bin:
             mean = sum(self.current_bin) / len(self.current_bin)
-            self.db.insert_data(self.last_key_press, round(60 / (mean * 5)))
-            print("loaded ", mean)
+            mean = round(60 / (mean * 5))
+            self.db.insert_data(int(self.last_key_press), mean)
+            print("loaded", mean, "WMP")
             self.current_bin = []
 
     def stop(self):
