@@ -27,4 +27,5 @@ class DBHandler:
         return self.cur.fetchall()
 
     def close(self):
+        print("Closing database connection...")
         self.conn.close()
