@@ -5,15 +5,17 @@ from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget
 
 from src.keyboard_handler import KeyboardHandler
-from src.db_handler import DBHandler
+from src.db_handlers import DBReader
+from src.utils import init_database
 
 class App(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.init_ui()
-        self.db = DBHandler()
+        init_database()
+        self.db = DBReader()
 
-        self.keyboard_handler = KeyboardHandler(self.db)
+        self.keyboard_handler = KeyboardHandler()
         self.keyboard_handler.start_monitoring()
 
     def init_ui(self):
