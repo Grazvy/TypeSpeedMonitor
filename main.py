@@ -1,5 +1,6 @@
 import signal
 import sys
+from pynput import keyboard
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication
@@ -22,7 +23,6 @@ class App(QWidget):
 
 
 if __name__ == "__main__":
-
     app = QApplication(sys.argv)
     window = App()
     window.show()
