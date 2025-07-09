@@ -1,3 +1,4 @@
+import math
 import time
 from datetime import datetime
 
@@ -89,12 +90,16 @@ class WPMGraph(QFrame):
 
         ax.set_xlim(time_bins[0], time_bins[-1])
 
-        # Set x-tick labels only on full minutes
         label_positions = []
         label_strings = []
+        seen_minutes = set()
+
         for ts in all_bin_centers:
             dt = datetime.fromtimestamp(ts)
-            if dt.second == 0:
+            minute_key = (dt.hour, dt.minute)
+
+            if minute_key not in seen_minutes and dt.second < self.bin_size:
+                seen_minutes.add(minute_key)
                 label_positions.append(ts)
                 label_strings.append(dt.strftime('%H:%M'))
 
