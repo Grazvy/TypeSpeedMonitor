@@ -65,7 +65,6 @@ class WPMGraph(QFrame):
 
         all_bin_centers = []
         all_wpm_values = []
-        all_time_labels = []
 
         for i in range(len(time_bins) - 1):
             bin_start = time_bins[i]
@@ -74,26 +73,36 @@ class WPMGraph(QFrame):
 
             all_bin_centers.append(bin_center)
             bin_data = [val for ts, val in data if bin_start <= ts < bin_end]
-
             all_wpm_values.append(np.mean(bin_data) if bin_data else np.nan)
-            dt = datetime.fromtimestamp(bin_center)
-            all_time_labels.append(dt.strftime('%H:%M'))
 
         self.canvas.figure.clear()
         ax = self.canvas.figure.add_subplot(111)
 
-        x_positions = np.arange(len(all_bin_centers))
-        valid_mask = ~np.isnan(all_wpm_values)
-        ax.bar(x_positions[valid_mask], np.array(all_wpm_values)[valid_mask],
-               color='steelblue', alpha=0.8, width=1.0)
+        # Plot bars even if all values are NaN
+        x_vals = np.array(all_bin_centers)
+        y_vals = np.array(all_wpm_values)
+        valid_mask = ~np.isnan(y_vals)
+
+        if valid_mask.any():
+            ax.bar(x_vals[valid_mask], y_vals[valid_mask], width=self.bin_size,
+                   color='steelblue', alpha=0.8, align='center')
+
+        ax.set_xlim(time_bins[0], time_bins[-1])
+
+        # Set x-tick labels only on full minutes
+        label_positions = []
+        label_strings = []
+        for ts in all_bin_centers:
+            dt = datetime.fromtimestamp(ts)
+            if dt.second == 0:
+                label_positions.append(ts)
+                label_strings.append(dt.strftime('%H:%M'))
+
+        ax.set_xticks(label_positions)
+        ax.set_xticklabels(label_strings, rotation=45, ha='right')
 
         ax.set_title('Words Per Minute', fontsize=14, fontweight='bold')
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
-
-        step = 12
-        ax.set_xticks(x_positions[::step])
-        ax.set_xticklabels([all_time_labels[i] for i in range(0, len(all_time_labels), step)],
-                           rotation=45)
 
         y_max = self.db.get_max() * 1.25
         ax.set_ylim(0, y_max)
