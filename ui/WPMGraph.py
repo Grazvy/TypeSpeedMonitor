@@ -3,7 +3,7 @@ from datetime import datetime
 
 import numpy as np
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QFrame, QVBoxLayout
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -13,13 +13,8 @@ SPP = 1 / 5     # seconds per pixel
 class WPMGraph(QFrame):
     def __init__(self, db, bin_size):
         super().__init__()
-
-        self.db = db
-        self.bin_size = bin_size
-        self.interval_end = (time.time() // bin_size) * bin_size
-        self.interval_size = self.width() * SPP
-
         self.setMinimumSize(600, 300)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QVBoxLayout(self)
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
@@ -28,13 +23,19 @@ class WPMGraph(QFrame):
         self.canvas.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.canvas.setFocus()
 
+        self.custom_interval = False
+        self.db = db
+        self.bin_size = bin_size
+        self.interval_end = (time.time() // bin_size) * bin_size
+        self.interval_size = self.width() * SPP
+
         # initial plot
         self.plot()
 
         # auto-refresh
         self.timer = QTimer(self)
-        self.timer.timeout.connect(self.plot)
-        self.timer.start(30_000)
+        self.timer.timeout.connect(self.update_plot)
+        self.timer.start(10_000)
 
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
 
@@ -45,7 +46,13 @@ class WPMGraph(QFrame):
         self.plot()
         super().resizeEvent(event)
 
+    def update_plot(self):
+        if not self.custom_interval:
+            self.interval_end = (time.time() // self.bin_size) * self.bin_size
+            self.plot()
+
     def on_scroll(self, event):
+        self.custom_interval = True
         direction = event.step  # +1 for up, -1 for down
         self.interval_end += -direction * self.bin_size
         self.plot()
@@ -80,16 +87,15 @@ class WPMGraph(QFrame):
         ax.bar(x_positions[valid_mask], np.array(all_wpm_values)[valid_mask],
                color='steelblue', alpha=0.8, width=1.0)
 
-        ax.set_ylabel('Words Per Minute (WPM)', fontsize=12)
-        ax.set_title('Typing Speed', fontsize=14, fontweight='bold')
+        ax.set_title('Words Per Minute', fontsize=14, fontweight='bold')
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
 
-        step = max(1, len(all_time_labels) // 5)
+        step = 12
         ax.set_xticks(x_positions[::step])
         ax.set_xticklabels([all_time_labels[i] for i in range(0, len(all_time_labels), step)],
                            rotation=45)
 
-        y_max = np.nanmax(all_wpm_values + [60]) * 1.25
+        y_max = self.db.get_max() * 1.25
         ax.set_ylim(0, y_max)
 
         self.canvas.figure.tight_layout()

@@ -40,6 +40,11 @@ class DBReader():
         )
         return self.cur.fetchall()
 
+    def get_max(self):
+        self.cur.execute(f"SELECT MAX(value) FROM log_data")
+        result = self.cur.fetchone()
+        return result[0] if result else 60
+
     def close(self):
         print("Closing database reading connection...")
         self.conn.close()

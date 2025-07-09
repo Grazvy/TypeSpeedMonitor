@@ -3,11 +3,11 @@ import sys
 import time
 
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QPushButton
+from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget
 
 from src.keyboard_handler import KeyboardHandler
 from src.db_handlers import DBReader
-from src.utils import init_database, get_db_path
+from src.utils import init_database
 
 from ui.WPMGraph import WPMGraph
 
@@ -35,14 +35,7 @@ class App(QWidget):
         graph = WPMGraph(self.db, bin_size=MIN_BIN_SIZE)
         layout.addWidget(graph)
 
-        button = QPushButton("Plot", self)
-        button.clicked.connect(lambda: self.get_values())
-        layout.addWidget(button)
-
         self.setLayout(layout)
-
-    def get_values(self):
-        print(self.db.read_data(time.time() - 300, time.time()))
 
     def closeEvent(self, event):
         self.keyboard_handler.stop()
