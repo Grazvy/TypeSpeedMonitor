@@ -1,4 +1,3 @@
-import math
 import time
 from datetime import datetime
 
@@ -27,7 +26,7 @@ class WPMGraph(QFrame):
         self.custom_interval = False
         self.db = db
         self.bin_size = bin_size
-        self.interval_end = (time.time() // bin_size) * bin_size
+        self.interval_end = time.time()
         self.interval_size = self.width() * SPP
 
         # initial plot
@@ -49,20 +48,24 @@ class WPMGraph(QFrame):
 
     def update_plot(self):
         if not self.custom_interval:
-            self.interval_end = (time.time() // self.bin_size) * self.bin_size
+            self.interval_end = time.time()
             self.plot()
 
     def on_scroll(self, event):
         self.custom_interval = True
         direction = event.step  # +1 for up, -1 for down
-        self.interval_end += -direction * self.bin_size
+        self.interval_end += -direction
         self.plot()
 
-    def plot(self):
-        interval_start = self.interval_end - self.interval_size
-        time_bins = np.arange(interval_start, self.interval_end + self.bin_size, self.bin_size)
+    def get_last_bin(self):
+        return (self.interval_end // self.bin_size) * self.bin_size
 
-        data = self.db.read_data(interval_start, self.interval_end)
+    def plot(self):
+        last_bin = self.get_last_bin()
+        interval_start = last_bin - self.interval_size
+        time_bins = np.arange(interval_start, last_bin + self.bin_size, self.bin_size)
+
+        data = self.db.read_data(interval_start, last_bin)
 
         all_bin_centers = []
         all_wpm_values = []
