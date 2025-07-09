@@ -3,14 +3,15 @@ from pynput import keyboard
 
 from src.db_handlers import DBWriter
 
-MIN_BIN_SIZE = 5
 RECORDING_THRESHOLD = 1.0
+MIN_RECORDINGS = 8
 
 class KeyboardHandler:
-    def __init__(self):
+    def __init__(self, min_bin_size):
         self.db = DBWriter()
         self.listener = None
         self.last_key_press = time.time()
+        self.min_bin_size = min_bin_size
         self.current_bin = []
 
     def start_monitoring(self):
@@ -25,20 +26,22 @@ class KeyboardHandler:
         current_time = time.time()
         time_passed = current_time - self.last_key_press
 
-        if self.last_key_press // MIN_BIN_SIZE < current_time // MIN_BIN_SIZE:
-            self.load_current_bin()
+        if self.last_key_press // self.min_bin_size < current_time // self.min_bin_size:
+            self.process_current_bin()
 
         if time_passed < RECORDING_THRESHOLD:
             self.current_bin.append(time_passed)
 
         self.last_key_press = current_time
 
-    def load_current_bin(self):
-        if self.current_bin:
+    def process_current_bin(self):
+        if len(self.current_bin) < MIN_RECORDINGS:
+            self.current_bin = []
+        else:
             mean = sum(self.current_bin) / len(self.current_bin)
-            mean = round(60 / (mean * 5))
-            self.db.insert_data(int(self.last_key_press), mean)
-            print("loaded", mean, "WMP")
+            wpm = round(60 / (mean * 5))
+            self.db.insert_data(int(self.last_key_press), wpm)
+            print("loaded", wpm, "WMP")
             self.current_bin = []
 
     def stop(self):
