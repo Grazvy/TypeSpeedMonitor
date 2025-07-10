@@ -12,15 +12,15 @@ from src.views.SizeSelector import SizeSelector
 NUM_PIXELS = 5
 
 class WPMGraph(QFrame):
-    def __init__(self, db, bin_size):
+    def __init__(self, db, bin_size, mult=1):
         super().__init__()
-        self.mult = 1    # normalized to one minute
+        self.mult = mult    # normalized = one minute
         self.seconds_per_pixel = 1 / NUM_PIXELS
         self.custom_interval = False
         self.db = db
-        self.bin_size = bin_size
+        self.bin_size = bin_size * mult
         self.interval_end = time.time() + bin_size
-        self.interval_size = self.width() * self.seconds_per_pixel
+        self.interval_size = self.width() * self.seconds_per_pixel * mult
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 

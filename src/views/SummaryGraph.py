@@ -1,8 +1,11 @@
 import time
 import numpy as np
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout
+from PyQt6.QtCore import QDateTime
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QDateTimeEdit, QLabel, QComboBox
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
+from src.views.TimeRangeSlider import TimeRangeSlider
 
 class SummaryGraph(QFrame):
     def __init__(self, db):
@@ -12,7 +15,17 @@ class SummaryGraph(QFrame):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout = QVBoxLayout(self)
         controls_layout = QHBoxLayout()
-        # todo start/stop selection
+
+        self.slider = TimeRangeSlider()
+        self.slider.rangeChanged.connect(lambda start, end: print("Start:", start, "End:", end))
+
+        self.label_selection = QComboBox()
+        self.label_selection.addItems(["today"])
+        self.label_selection.currentTextChanged.connect(self.slider.update_format)
+        controls_layout.addWidget(self.label_selection)
+        controls_layout.addWidget(self.slider)
+
+        layout.addLayout(controls_layout)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
         self.canvas.setMaximumHeight(500)
