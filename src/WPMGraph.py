@@ -3,18 +3,25 @@ from datetime import datetime, timedelta
 
 import numpy as np
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+from src.SizeSelector import SizeSelector
 
-# todo make customizable
-SPP = 1 / 5    # seconds per pixel
+NUM_PIXELS = 5
 
 class WPMGraph(QFrame):
     def __init__(self, db, bin_size):
         super().__init__()
-        self.setMinimumSize(600, 600)
+        self.mult = 1    # normalized to one minute
+        self.seconds_per_pixel = 1 / NUM_PIXELS
+        self.custom_interval = False
+        self.db = db
+        self.bin_size = bin_size
+        self.interval_end = time.time() + bin_size
+        self.interval_size = self.width() * self.seconds_per_pixel
+
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QVBoxLayout(self)
@@ -25,24 +32,22 @@ class WPMGraph(QFrame):
         controls_layout.addWidget(self.back_to_start)
 
         self.label_selection = QComboBox()
-        self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min", "1 day", "1 week", "1 month"])
+        self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min", "1 day", "1 week", "1 month", "1 year"])
         self.label_selection.currentTextChanged.connect(self.update_mult)
         controls_layout.addWidget(self.label_selection)
+
+        self.size_selector = SizeSelector(NUM_PIXELS)
+        self.size_selector.intervalChanged.connect(self.update_spp)
+        controls_layout.addWidget(self.size_selector)
 
         layout.addLayout(controls_layout)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
+        self.canvas.setMinimumSize(600, 500)
         self.canvas.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.canvas.setFocus()
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
         layout.addWidget(self.canvas)
-
-        self.mult = 1    # normalized to one minute
-        self.custom_interval = False
-        self.db = db
-        self.bin_size = bin_size
-        self.interval_end = time.time()
-        self.interval_size = self.width() * SPP
 
         # initial plot
         self.plot()
@@ -53,15 +58,13 @@ class WPMGraph(QFrame):
         self.timer.start(2_000)
 
     def resizeEvent(self, event):
-        pixels = self.width()
-        self.interval_size = int(pixels * SPP) * self.mult
-
+        self.interval_size = self.width() * self.seconds_per_pixel * self.mult
         self.plot()
         super().resizeEvent(event)
 
     def update_plot(self):
         if not self.custom_interval:
-            self.interval_end = time.time()
+            self.interval_end = time.time() + self.bin_size
             self.plot()
 
     def on_scroll(self, event):
@@ -72,11 +75,16 @@ class WPMGraph(QFrame):
 
     def reset_position(self):
         self.custom_interval = False
-        self.interval_end = time.time()
+        self.interval_end = time.time() + self.bin_size
         self.plot()
 
     def get_last_bin(self):
         return (self.interval_end // self.bin_size) * self.bin_size
+
+    def update_spp(self, num_pixels):
+        self.seconds_per_pixel = 1 / num_pixels
+        self.interval_size = self.width() * self.seconds_per_pixel * self.mult
+        self.plot()
 
     def update_mult(self, text):
         if text == "1 min":
@@ -95,6 +103,8 @@ class WPMGraph(QFrame):
             new_mult = 7 * 24 * 60
         elif text == "1 month":
             new_mult = 30 * 24 * 60
+        elif text == "1 year":
+            new_mult = 12 * 30 * 24 * 60
         else:
             raise ValueError(f"Unrecognized text {text}")
 
@@ -143,24 +153,24 @@ class WPMGraph(QFrame):
         for ts in all_bin_centers:
             dt = datetime.fromtimestamp(ts)
 
-            if self.mult == 60 * 24 * 7:
-                week_start = dt.date() - timedelta(days=dt.weekday())
-                key = week_start
-                label = week_start.strftime('%m.%d')
-
-            elif self.mult == 60 * 24 * 30:
-                month_start = dt.replace(day=1).date()
-                key = month_start
-                label = month_start.strftime('%b')
-
-            elif self.mult == 60 * 24:
-                key = dt.date()
-                label = dt.strftime('%a %d')
-
-            else:
+            if self.mult <= 60:  # Minute-level (1s, 5s, etc.)
                 bucket_minute = (dt.minute // self.mult) * self.mult
                 key = (dt.hour, bucket_minute, dt.date())
                 label = dt.strftime('%H:%M')
+            elif self.mult == 60 * 24:  # Daily
+                key = dt.date()
+                label = dt.strftime('%a %d')
+            elif self.mult == 7 * 24 * 60:  # Weekly
+                key = dt.date() - timedelta(days=dt.weekday())
+                label = key.strftime('%m.%d')
+            elif self.mult == 30 * 24 * 60:  # Monthly
+                key = dt.replace(day=1).date()
+                label = key.strftime('%b')
+            elif self.mult == 12 * 30 * 24 * 60:  # Yearly
+                key = dt.year
+                label = key
+            else:
+                raise ValueError(f"Unrecognized multiplier {self.mult}")
 
             if key not in seen_keys:
                 seen_keys.add(key)
@@ -192,6 +202,7 @@ class WPMGraph(QFrame):
         elif self.mult == 60 * 24 * 30:
             title = dt.strftime("%Y")
 
+        ax.set_ylabel('Words Per Minute (WPM)', fontsize=12)
         ax.set_title(title, fontsize=12, fontweight='bold')
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
 
