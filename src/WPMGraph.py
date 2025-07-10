@@ -1,14 +1,15 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import numpy as np
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout, QLabel
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 
-SPP = 1 / 5     # seconds per pixel
+# todo make customizable
+SPP = 1 / 5    # seconds per pixel
 
 class WPMGraph(QFrame):
     def __init__(self, db, bin_size):
@@ -19,22 +20,22 @@ class WPMGraph(QFrame):
         layout = QVBoxLayout(self)
         controls_layout = QHBoxLayout()
 
-        self.back_to_start = QPushButton("Back to current time", self)
+        self.back_to_start = QPushButton("reset position")
         self.back_to_start.clicked.connect(self.reset_position)
         controls_layout.addWidget(self.back_to_start)
 
         self.label_selection = QComboBox()
-        self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min"])
+        self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min", "1 day", "1 week", "1 month"])
         self.label_selection.currentTextChanged.connect(self.update_mult)
         controls_layout.addWidget(self.label_selection)
 
         layout.addLayout(controls_layout)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
-        layout.addWidget(self.canvas)
-
         self.canvas.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         self.canvas.setFocus()
+        self.canvas.mpl_connect("scroll_event", self.on_scroll)
+        layout.addWidget(self.canvas)
 
         self.mult = 1    # normalized to one minute
         self.custom_interval = False
@@ -50,8 +51,6 @@ class WPMGraph(QFrame):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plot)
         self.timer.start(2_000)
-
-        self.canvas.mpl_connect("scroll_event", self.on_scroll)
 
     def resizeEvent(self, event):
         pixels = self.width()
@@ -90,6 +89,12 @@ class WPMGraph(QFrame):
             new_mult = 30
         elif text == "60 min":
             new_mult = 60
+        elif text == "1 day":
+            new_mult = 24 * 60
+        elif text == "1 week":
+            new_mult = 7 * 24 * 60
+        elif text == "1 month":
+            new_mult = 30 * 24 * 60
         else:
             raise ValueError(f"Unrecognized text {text}")
 
@@ -133,28 +138,61 @@ class WPMGraph(QFrame):
 
         label_positions = []
         label_strings = []
-        seen_buckets = set()
+        seen_keys = set()
 
         for ts in all_bin_centers:
             dt = datetime.fromtimestamp(ts)
 
-            bucket_minute = (dt.minute // self.mult) * self.mult
-            bucket_key = (dt.hour, bucket_minute)
+            if self.mult == 60 * 24 * 7:
+                week_start = dt.date() - timedelta(days=dt.weekday())
+                key = week_start
+                label = week_start.strftime('%m.%d')
 
-            if bucket_key not in seen_buckets:
-                seen_buckets.add(bucket_key)
+            elif self.mult == 60 * 24 * 30:
+                month_start = dt.replace(day=1).date()
+                key = month_start
+                label = month_start.strftime('%b')
+
+            elif self.mult == 60 * 24:
+                key = dt.date()
+                label = dt.strftime('%a %d')
+
+            else:
+                bucket_minute = (dt.minute // self.mult) * self.mult
+                key = (dt.hour, bucket_minute, dt.date())
+                label = dt.strftime('%H:%M')
+
+            if key not in seen_keys:
+                seen_keys.add(key)
                 label_positions.append(ts)
-                label_strings.append(dt.strftime('%H:%M'))
+                label_strings.append(label)
 
-        if label_positions[1] - label_positions[0] < 60 * self.mult:
-            # remove first label, if too close
-            ax.set_xticks(label_positions[1:])
-            ax.set_xticklabels(label_strings[1:], rotation=45, ha='right')
+        if len(label_positions) > 1:
+            too_close = label_positions[1] - label_positions[0] < 60 * self.mult
+            first_label = 1 if too_close else 0
         else:
-            ax.set_xticks(label_positions)
-            ax.set_xticklabels(label_strings, rotation=45, ha='right')
+            first_label = 0
 
-        ax.set_title('Words Per Minute', fontsize=14, fontweight='bold')
+        ax.set_xticks(label_positions[first_label:])
+        ax.set_xticklabels(label_strings[first_label:], rotation=45, ha='right')
+
+        title = ""
+        center_ts = (time_bins[0] + time_bins[-1]) / 2
+        dt = datetime.fromtimestamp(center_ts)
+        if self.mult <= 60:
+            today = datetime.now()
+            if dt.day == today.day:
+                title = "today"
+            else:
+                title = dt.strftime("%d %b %Y")
+
+        elif self.mult <= 60 * 24 * 7:
+            title = dt.strftime("%b %Y")
+
+        elif self.mult == 60 * 24 * 30:
+            title = dt.strftime("%Y")
+
+        ax.set_title(title, fontsize=12, fontweight='bold')
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
 
         y_max = self.db.get_max() * 1.25
