@@ -1,4 +1,6 @@
-from PyQt6.QtGui import QMouseEvent, QPainter
+from datetime import datetime
+
+from PyQt6.QtGui import QMouseEvent, QPainter, QFont
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QRect
 
@@ -10,19 +12,24 @@ class TimeRangeSlider(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setMinimumHeight(40)
+        self.setMinimumHeight(60)
         self.setMouseTracking(True)
 
-        self.handle_width = 10
+        # Time configuration
+        self.step_minutes = 5
         self.duration_minutes = 12 * 60
-        self.current_time = int(time.time())
+        self.current_time = (time.time() // self.step_minutes + 1) * self.step_minutes
 
-        self.start_val = self.duration_minutes - 4 * 60  # 8 hours ago
-        self.end_val = self.duration_minutes             # now
+        # Default interval: last 4 hours
+        self.start_val = self.duration_minutes - 4 * 60
+        self.end_val = self.duration_minutes
 
+        # UI state
+        self.handle_radius = 7
         self.dragging_start = False
         self.dragging_end = False
 
+        # Live time sync
         timer = QTimer(self)
         timer.timeout.connect(self.sync_time)
         timer.start(60_000)
@@ -36,53 +43,71 @@ class TimeRangeSlider(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        track_rect = QRect(
-            self.handle_width, self.height() // 2 - 4,
-            self.width() - 2 * self.handle_width, 8
-        )
+        width = self.width()
+        height = self.height()
+        margin = self.handle_radius + 5
 
-        # Background track
+        # Track
+        track_rect = QRect(margin, height // 2 - 4, width - 2 * margin, 8)
         painter.setBrush(Qt.GlobalColor.lightGray)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(track_rect)
 
-        # Active range
+        # Pixel-per-minute conversion
         pixel_per_min = track_rect.width() / self.duration_minutes
-        x1 = self.handle_width + int(self.start_val * pixel_per_min)
-        x2 = self.handle_width + int(self.end_val * pixel_per_min)
+        x1 = margin + int(self.start_val * pixel_per_min)
+        x2 = margin + int(self.end_val * pixel_per_min)
 
+        # Active range
         active_rect = QRect(x1, track_rect.top(), x2 - x1, track_rect.height())
-        painter.setBrush(Qt.GlobalColor.darkCyan)
+        painter.setBrush(Qt.GlobalColor.blue)
         painter.drawRect(active_rect)
 
-        # Draw handles
-        for x in [x1, x2]:
-            painter.setBrush(Qt.GlobalColor.black)
-            painter.drawRect(x - self.handle_width // 2, track_rect.top() - 6,
-                             self.handle_width, track_rect.height() + 12)
+        # Draw circular handles
+        painter.setBrush(Qt.GlobalColor.gray)
+        painter.setPen(Qt.GlobalColor.gray)
+        painter.drawEllipse(x1 - self.handle_radius, height // 2 - self.handle_radius,
+                            2 * self.handle_radius, 2 * self.handle_radius)
+        painter.drawEllipse(x2 - self.handle_radius, height // 2 - self.handle_radius,
+                            2 * self.handle_radius, 2 * self.handle_radius)
+
+        # Draw time range label
+        painter.setPen(Qt.GlobalColor.black)
+        painter.setFont(QFont("Arial", 14))
+
+        ts_start = self._val_to_ts(self.start_val)
+        ts_end = self._val_to_ts(self.end_val)
+
+        t_start = datetime.fromtimestamp(ts_start).strftime("%H:%M")
+        t_end = datetime.fromtimestamp(ts_end).strftime("%H:%M")
+
+        label = f"summarize from {t_start} to {t_end}"
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignTop, label)
 
     def mousePressEvent(self, event: QMouseEvent):
         pos = event.position().x()
-        handle_pos_start = self._val_to_pixel(self.start_val)
-        handle_pos_end = self._val_to_pixel(self.end_val)
+        x1 = self._val_to_pixel(self.start_val)
+        x2 = self._val_to_pixel(self.end_val)
 
-        if abs(pos - handle_pos_start) < 10:
+        if abs(pos - x1) < 2 * self.handle_radius:
             self.dragging_start = True
-        elif abs(pos - handle_pos_end) < 10:
+        elif abs(pos - x2) < 2 * self.handle_radius:
             self.dragging_end = True
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if not (self.dragging_start or self.dragging_end):
             return
 
-        pixel = event.position().x()
-        val = self._pixel_to_val(pixel)
+        val = self._pixel_to_val(event.position().x())
         val = max(0, min(self.duration_minutes, val))
+        val = (val // self.step_minutes) * self.step_minutes  # Snap to 5-minute step
 
         if self.dragging_start:
-            self.start_val = min(val, self.end_val - 1)
+            self.start_val = min(val, self.end_val - self.step_minutes)
         elif self.dragging_end:
-            self.end_val = max(val, self.start_val + 1)
+            self.end_val = max(val, self.start_val + self.step_minutes)
 
         self.rangeChanged.emit(self._val_to_ts(self.start_val), self._val_to_ts(self.end_val))
         self.update()
@@ -92,21 +117,21 @@ class TimeRangeSlider(QWidget):
         self.dragging_end = False
 
     def _val_to_pixel(self, val):
-        return self.handle_width + int(val * (self.width() - 2 * self.handle_width) / self.duration_minutes)
+        track_width = self.width() - 2 * (self.handle_radius + 5)
+        return (self.handle_radius + 5) + val * track_width / self.duration_minutes
 
     def _pixel_to_val(self, px):
-        track_width = self.width() - 2 * self.handle_width
-        return int((px - self.handle_width) * self.duration_minutes / track_width)
+        track_width = self.width() - 2 * (self.handle_radius + 5)
+        return int((px - (self.handle_radius + 5)) * self.duration_minutes / track_width)
 
     def _val_to_ts(self, val):
         return self.current_time - (self.duration_minutes - val) * 60
 
     def set_range(self, start_ts, end_ts):
-        now = int(time.time())
-        self.current_time = now
+        self.current_time = int(time.time())
 
-        offset_start = now - start_ts
-        offset_end = now - end_ts
+        offset_start = self.current_time - start_ts
+        offset_end = self.current_time - end_ts
 
         self.start_val = self.duration_minutes - offset_start // 60
         self.end_val = self.duration_minutes - offset_end // 60
