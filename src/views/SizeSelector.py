@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton
-from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtCore import Qt, pyqtSignal, QSize
 from PyQt6.QtGui import QIcon, QPixmap, QPainter, QPen
 
 class SizeSelector(QWidget):
@@ -17,12 +17,13 @@ class SizeSelector(QWidget):
     def setup_ui(self):
         layout = QHBoxLayout()
         # todo fix layout
-        layout.setContentsMargins(10, 10, 10, 10)
         layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
 
         self.decrease_button = QPushButton()
-        self.decrease_button.setFixedSize(40, 40)
+        self.decrease_button.setFixedSize(40, 25)
         self.decrease_button.setIcon(self.create_widen_icon())
+        self.decrease_button.setIconSize(QSize(25, 25))
         self.decrease_button.setToolTip("decrease content")
         self.decrease_button.clicked.connect(self.decrease_content)
         self.decrease_button.setStyleSheet("""
@@ -45,8 +46,9 @@ class SizeSelector(QWidget):
         """)
 
         self.increase_button = QPushButton()
-        self.increase_button.setFixedSize(40, 40)
+        self.increase_button.setFixedSize(40, 25)
         self.increase_button.setIcon(self.create_narrow_icon())
+        self.increase_button.setIconSize(QSize(25, 25))
         self.increase_button.setToolTip("increase content")
         self.increase_button.clicked.connect(self.increase_content)
         self.increase_button.setStyleSheet("""

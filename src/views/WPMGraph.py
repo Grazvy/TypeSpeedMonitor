@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComb
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from src.SizeSelector import SizeSelector
+from src.views.SizeSelector import SizeSelector
 
 NUM_PIXELS = 5
 
