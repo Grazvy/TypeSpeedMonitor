@@ -3,7 +3,7 @@ from datetime import datetime
 
 import numpy as np
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -13,19 +13,22 @@ SPP = 1 / 5     # seconds per pixel
 class WPMGraph(QFrame):
     def __init__(self, db, bin_size):
         super().__init__()
-        self.setMinimumSize(600, 300)
+        self.setMinimumSize(600, 600)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         layout = QVBoxLayout(self)
+        controls_layout = QHBoxLayout()
 
-        self.back_to_start = QPushButton(f"back to current time", self)
+        self.back_to_start = QPushButton("Back to current time", self)
         self.back_to_start.clicked.connect(self.reset_position)
-        layout.addWidget(self.back_to_start)
+        controls_layout.addWidget(self.back_to_start)
 
-        self.combo = QComboBox()
-        self.combo.addItems(["1 min", "5 min", "15 min", "30 min", "60 min"])
-        self.combo.currentTextChanged.connect(self.update_mult)
-        layout.addWidget(self.combo)
+        self.label_selection = QComboBox()
+        self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min"])
+        self.label_selection.currentTextChanged.connect(self.update_mult)
+        controls_layout.addWidget(self.label_selection)
+
+        layout.addLayout(controls_layout)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
         layout.addWidget(self.canvas)
@@ -46,7 +49,7 @@ class WPMGraph(QFrame):
         # auto-refresh
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plot)
-        self.timer.start(5_000)
+        self.timer.start(2_000)
 
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
 
@@ -101,7 +104,7 @@ class WPMGraph(QFrame):
         interval_start = last_bin - self.interval_size
         time_bins = np.arange(interval_start, last_bin + self.bin_size, self.bin_size)
 
-        data = self.db.read_data(interval_start, last_bin)
+        data = self.db.read_data(interval_start, time_bins[-1])
 
         all_bin_centers = []
         all_wpm_values = []

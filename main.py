@@ -1,6 +1,5 @@
 import signal
 import sys
-import time
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget
@@ -9,7 +8,7 @@ from src.keyboard_handler import KeyboardHandler
 from src.db_handlers import DBReader
 from src.utils import init_database
 
-from ui.WPMGraph import WPMGraph
+from src.WPMGraph import WPMGraph
 
 MIN_BIN_SIZE = 5
 
