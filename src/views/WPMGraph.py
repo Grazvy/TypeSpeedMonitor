@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 
 import numpy as np
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout, QToolTip, QMessageBox
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -23,6 +24,8 @@ class WPMGraph(QFrame):
         self.interval_size = self.width() * self.seconds_per_pixel * mult
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setToolTip("scroll to change the interval")
+        QToolTip.setFont(QFont("Arial", 14))
 
         layout = QVBoxLayout(self)
         controls_layout = QHBoxLayout()
@@ -69,6 +72,7 @@ class WPMGraph(QFrame):
 
     def on_scroll(self, event):
         self.custom_interval = True
+        self.setToolTip("")
         direction = event.step  # +1 for up, -1 for down
         self.interval_end += -direction * self.mult
         self.plot()
