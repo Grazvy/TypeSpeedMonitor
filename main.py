@@ -2,13 +2,14 @@ import signal
 import sys
 
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget
+from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QTabWidget
 
 from src.keyboard_handler import KeyboardHandler
 from src.db_handlers import DBReader
 from src.utils import init_database
 
-from src.WPMGraph import WPMGraph
+from src.views.WPMGraph import WPMGraph
+from src.views.SummaryGraph import SummaryGraph
 
 MIN_BIN_SIZE = 5
 
@@ -31,9 +32,15 @@ class App(QWidget):
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        graph = WPMGraph(self.db, bin_size=MIN_BIN_SIZE)
-        layout.addWidget(graph)
+        tabs = QTabWidget()
 
+        wpm_graph = WPMGraph(self.db, bin_size=MIN_BIN_SIZE)
+        tabs.addTab(wpm_graph, "Monitoring")
+
+        summary_graph = SummaryGraph(self.db)
+        tabs.addTab(summary_graph, "Summary")
+
+        layout.addWidget(tabs)
         self.setLayout(layout)
 
     def closeEvent(self, event):
