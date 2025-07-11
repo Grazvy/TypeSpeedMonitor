@@ -1,12 +1,14 @@
 from datetime import datetime
 
 import numpy as np
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox, QWidget
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.views.TimeRangeSlider import TimeRangeSlider
+from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
+from src.utils import apply_dark_theme
 
 class SummaryGraph(QFrame):
     def __init__(self, db):
@@ -18,17 +20,20 @@ class SummaryGraph(QFrame):
         controls = QWidget()
         controls_layout = QHBoxLayout()
 
+        self.toggle = ToggleDarkmodeButton()
+        controls_layout.addWidget(self.toggle)
+
         self.slider = TimeRangeSlider()
         self.slider.rangeChanged.connect(self.set_interval)
 
         self.label_selection = QComboBox()
-        self.label_selection.addItems(["today", "last year"])
+        self.label_selection.addItems(["day", "month", "year"])
         self.label_selection.currentTextChanged.connect(self.slider.update_format)
 
         controls_layout.addWidget(self.label_selection)
         controls_layout.addWidget(self.slider)
         controls.setLayout(controls_layout)
-        controls.setMaximumHeight(80)
+        controls.setFixedHeight(80)
         layout.addWidget(controls)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
@@ -66,7 +71,7 @@ class SummaryGraph(QFrame):
 
         if not wpm_values:
             ax.set_title("No data available")
-            self.canvas.draw()
+            self.canvas.draw_idle()
             return
 
         bins = np.arange(min(wpm_values), max(wpm_values) + bin_width, bin_width)
@@ -88,5 +93,7 @@ class SummaryGraph(QFrame):
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
         ax.set_ylim(0, max(percentages) * 1.1)
 
+        apply_dark_theme(ax)
+
         self.canvas.figure.tight_layout()
-        self.canvas.draw()
+        self.canvas.draw_idle()

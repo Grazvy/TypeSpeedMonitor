@@ -8,6 +8,9 @@ from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComb
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
+from src.utils import apply_dark_theme
+
 SPP = 1/ 5
 
 class WPMGraph(QFrame):
@@ -27,6 +30,9 @@ class WPMGraph(QFrame):
 
         layout = QVBoxLayout(self)
         controls_layout = QHBoxLayout()
+
+        self.toggle = ToggleDarkmodeButton()
+        controls_layout.addWidget(self.toggle)
 
         self.back_to_start = QPushButton("reset position")
         self.back_to_start.clicked.connect(self.reset_position)
@@ -209,5 +215,7 @@ class WPMGraph(QFrame):
         y_max = self.db.get_max() * 1.25
         ax.set_ylim(0, y_max)
 
+        apply_dark_theme(ax)
+
         self.canvas.figure.tight_layout
-        self.canvas.draw()
+        self.canvas.draw_idle()
