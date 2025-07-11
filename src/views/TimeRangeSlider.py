@@ -8,7 +8,7 @@ import time
 
 
 class TimeRangeSlider(QWidget):
-    rangeChanged = pyqtSignal(int, int)
+    rangeChanged = pyqtSignal(float, float)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -18,7 +18,7 @@ class TimeRangeSlider(QWidget):
         # Time configuration
         self.step_minutes = 5
         self.duration_minutes = 12 * 60
-        self.current_time = (time.time() // self.step_minutes + 1) * self.step_minutes
+        self.current_time = (time.time() // (self.step_minutes * 60) + 1) * self.step_minutes * 60
 
         # Default interval: last 4 hours
         self.start_val = self.duration_minutes - 4 * 60
@@ -86,6 +86,9 @@ class TimeRangeSlider(QWidget):
         label = f"summarize from {t_start} to {t_end}"
         painter.drawText(self.rect(), Qt.AlignmentFlag.AlignTop, label)
 
+
+    def get_interval(self):
+        return self._val_to_ts(self.start_val), self._val_to_ts(self.end_val)
     def mousePressEvent(self, event: QMouseEvent):
         pos = event.position().x()
         x1 = self._val_to_pixel(self.start_val)

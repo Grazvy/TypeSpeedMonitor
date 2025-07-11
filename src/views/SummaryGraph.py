@@ -1,7 +1,6 @@
-import time
 import numpy as np
-from PyQt6.QtCore import QDateTime
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QDateTimeEdit, QLabel, QComboBox
+from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -17,27 +16,40 @@ class SummaryGraph(QFrame):
         controls_layout = QHBoxLayout()
 
         self.slider = TimeRangeSlider()
-        self.slider.rangeChanged.connect(lambda start, end: print("Start:", start, "End:", end))
+        self.slider.rangeChanged.connect(self.set_interval)
 
         self.label_selection = QComboBox()
         self.label_selection.addItems(["today"])
         self.label_selection.currentTextChanged.connect(self.slider.update_format)
+
         controls_layout.addWidget(self.label_selection)
         controls_layout.addWidget(self.slider)
-
         layout.addLayout(controls_layout)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
         self.canvas.setMaximumHeight(500)
         layout.addWidget(self.canvas)
 
-        self.plot_summary(time.time() - 10000000, time.time())
+        self.start_time, self.end_time = self.slider.get_interval()
 
-    def plot_summary(self, start_time, end_time, bin_width=5):
+        timer = QTimer(self)
+        timer.timeout.connect(self.plot_summary)
+        timer.start(500)
+
+        # initial plot
+        self.plot_summary()
+
+    def set_interval(self, start, end):
+        self.start_time = start
+        self.end_time = end
+
+
+    def plot_summary(self, bin_width=5):
+
         self.canvas.figure.clear()
         ax = self.canvas.figure.add_subplot(111)
 
-        data = self.db.read_data(start_time, end_time)
+        data = self.db.read_data(self.start_time, self.end_time)
         wpm_values = [val for _, val in data if val is not None]
 
         if not wpm_values:
