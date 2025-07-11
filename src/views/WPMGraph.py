@@ -8,15 +8,13 @@ from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComb
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from src.views.SizeSelector import SizeSelector
-
-NUM_PIXELS = 5
+SPP = 1/ 5
 
 class WPMGraph(QFrame):
     def __init__(self, db, bin_size, mult=15):
         super().__init__()
         self.mult = mult    # normalized = one minute
-        self.seconds_per_pixel = 1 / NUM_PIXELS
+        self.seconds_per_pixel = SPP
         self.custom_interval = False
         self.db = db
         self.bin_size = bin_size * mult
@@ -40,10 +38,6 @@ class WPMGraph(QFrame):
         self.label_selection.setCurrentIndex(all_mults.index(mult))
         self.label_selection.currentTextChanged.connect(self.update_mult)
         controls_layout.addWidget(self.label_selection)
-
-        self.size_selector = SizeSelector(NUM_PIXELS)
-        self.size_selector.intervalChanged.connect(self.update_spp)
-        controls_layout.addWidget(self.size_selector)
 
         layout.addLayout(controls_layout)
 
