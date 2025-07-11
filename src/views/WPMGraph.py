@@ -13,7 +13,7 @@ from src.views.SizeSelector import SizeSelector
 NUM_PIXELS = 5
 
 class WPMGraph(QFrame):
-    def __init__(self, db, bin_size, mult=1):
+    def __init__(self, db, bin_size, mult=15):
         super().__init__()
         self.mult = mult    # normalized = one minute
         self.seconds_per_pixel = 1 / NUM_PIXELS
@@ -25,7 +25,7 @@ class WPMGraph(QFrame):
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setToolTip("scroll to change the interval")
-        QToolTip.setFont(QFont("Arial", 14))
+        QToolTip.setFont(QFont("Arial", 18))
 
         layout = QVBoxLayout(self)
         controls_layout = QHBoxLayout()
@@ -35,7 +35,9 @@ class WPMGraph(QFrame):
         controls_layout.addWidget(self.back_to_start)
 
         self.label_selection = QComboBox()
+        all_mults = [1, 5, 15, 30, 60, 24 * 60, 7 * 24 * 60, 30 * 24 * 60, 12 * 30 * 24 * 60]
         self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min", "1 day", "1 week", "1 month", "1 year"])
+        self.label_selection.setCurrentIndex(all_mults.index(mult))
         self.label_selection.currentTextChanged.connect(self.update_mult)
         controls_layout.addWidget(self.label_selection)
 
