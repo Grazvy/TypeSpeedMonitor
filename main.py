@@ -26,7 +26,7 @@ class App(QWidget):
     def init_ui(self):
         self.setWindowTitle("App")
         self.setGeometry(0, 0, 1200, 800)
-        self.setStyleSheet("background-color: #3f3f63;")
+        #self.setStyleSheet("background-color: #3f3f63;")
 
         # Main layout
         layout = QVBoxLayout()

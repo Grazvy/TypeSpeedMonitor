@@ -10,7 +10,7 @@ import time
 class TimeRangeSlider(QWidget):
     rangeChanged = pyqtSignal(float, float)
 
-    def __init__(self, interval="today"):
+    def __init__(self, interval="day"):
         super().__init__()
         self.setMouseTracking(True)
 
@@ -28,14 +28,21 @@ class TimeRangeSlider(QWidget):
         timer.start(30_000)
 
     def update_format(self, text):
-        if text == "today":
+        if text == "day":
             self.step_minutes = 5
-            self.duration_minutes = 18 * 60
+            self.duration_minutes = 24 * 60
 
             # default size = 4 hours
             self.start_val = self.duration_minutes - 4 * 60
 
-        elif text == "last year":
+        elif text == "month":
+            self.step_minutes = 60 * 24
+            self.duration_minutes = 60 * 24 * 30
+
+            # default size = 1 week
+            self.start_val = self.duration_minutes - 60 * 24 * 7
+
+        elif text == "year":
             self.step_minutes = 60 * 24
             self.duration_minutes = 60 * 24 * 30 * 12
 
@@ -47,6 +54,7 @@ class TimeRangeSlider(QWidget):
 
         self.current_time = (time.time() // (self.step_minutes * 60) + 1) * self.step_minutes * 60
         self.end_val = self.duration_minutes
+        self.rangeChanged.emit(self._val_to_ts(self.start_val), self._val_to_ts(self.end_val))
 
         self.update()
 
