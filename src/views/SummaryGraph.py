@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import numpy as np
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox, QWidget
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -20,6 +20,12 @@ class SummaryGraph(QFrame):
         controls = QWidget()
         controls_layout = QHBoxLayout()
 
+        # workaround to remove autofocus
+        dummy = QWidget()
+        dummy.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        dummy.setFixedWidth(0)
+        controls_layout.addWidget(dummy)
+
         self.toggle = ToggleDarkmodeButton()
         controls_layout.addWidget(self.toggle)
 
@@ -34,6 +40,7 @@ class SummaryGraph(QFrame):
         controls_layout.addWidget(self.slider)
         controls.setLayout(controls_layout)
         controls.setFixedHeight(80)
+        controls.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         layout.addWidget(controls)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
@@ -47,6 +54,8 @@ class SummaryGraph(QFrame):
         timer = QTimer(self)
         timer.timeout.connect(self.plot_summary)
         timer.start(500)
+
+
 
         # initial plot
         self.plot_summary()
