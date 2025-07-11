@@ -1,6 +1,8 @@
+from datetime import datetime
+
 import numpy as np
-from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox, QWidget
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -13,24 +15,29 @@ class SummaryGraph(QFrame):
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout = QVBoxLayout(self)
+        controls = QWidget()
         controls_layout = QHBoxLayout()
 
         self.slider = TimeRangeSlider()
         self.slider.rangeChanged.connect(self.set_interval)
 
         self.label_selection = QComboBox()
-        self.label_selection.addItems(["today"])
+        self.label_selection.addItems(["today", "last year"])
         self.label_selection.currentTextChanged.connect(self.slider.update_format)
 
         controls_layout.addWidget(self.label_selection)
         controls_layout.addWidget(self.slider)
-        layout.addLayout(controls_layout)
+        controls.setLayout(controls_layout)
+        controls.setMaximumHeight(80)
+        layout.addWidget(controls)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
         self.canvas.setMaximumHeight(500)
         layout.addWidget(self.canvas)
 
         self.start_time, self.end_time = self.slider.get_interval()
+        self.title_from = datetime.fromtimestamp(self.start_time).strftime("%H:%M")
+        self.title_to = datetime.fromtimestamp(self.end_time).strftime("%H:%M")
 
         timer = QTimer(self)
         timer.timeout.connect(self.plot_summary)
@@ -42,10 +49,15 @@ class SummaryGraph(QFrame):
     def set_interval(self, start, end):
         self.start_time = start
         self.end_time = end
-
+        current = self.label_selection.currentText()
+        if current == "today":
+            self.title_from = datetime.fromtimestamp(start).strftime("%H:%M")
+            self.title_to = datetime.fromtimestamp(end).strftime("%H:%M")
+        elif current == "last year":
+            self.title_from = datetime.fromtimestamp(start).strftime("%d %b %Y")
+            self.title_to = datetime.fromtimestamp(end).strftime("%d %b %Y")
 
     def plot_summary(self, bin_width=5):
-
         self.canvas.figure.clear()
         ax = self.canvas.figure.add_subplot(111)
 
@@ -70,7 +82,7 @@ class SummaryGraph(QFrame):
         x_pad = (x_max - x_min) * 0.1
         ax.set_xlim(x_min - x_pad, x_max + x_pad)
 
-        ax.set_title("WPM Distribution", fontsize=13, fontweight='bold')
+        ax.set_title(f"Distribution from {self.title_from} to {self.title_to}", fontsize=13, fontweight='bold')
         ax.set_xlabel("WPM")
         ax.set_ylabel("Percentage (%)")
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')

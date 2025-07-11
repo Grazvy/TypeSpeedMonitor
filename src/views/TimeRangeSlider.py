@@ -10,35 +10,48 @@ import time
 class TimeRangeSlider(QWidget):
     rangeChanged = pyqtSignal(float, float)
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setMinimumHeight(60)
+    def __init__(self, interval="today"):
+        super().__init__()
         self.setMouseTracking(True)
 
-        # Time configuration
-        self.step_minutes = 5
-        self.duration_minutes = 12 * 60
-        self.current_time = (time.time() // (self.step_minutes * 60) + 1) * self.step_minutes * 60
-
-        # Default interval: last 4 hours
-        self.start_val = self.duration_minutes - 4 * 60
-        self.end_val = self.duration_minutes
+        self.update_format(interval)
 
         # UI state
         self.handle_radius = 7
+        self.padding = 20
+        self.margin = self.handle_radius + self.padding
         self.dragging_start = False
         self.dragging_end = False
 
-        # Live time sync
         timer = QTimer(self)
         timer.timeout.connect(self.sync_time)
-        timer.start(60_000)
+        timer.start(30_000)
 
-    def update_format(self):
-        pass
+    def update_format(self, text):
+        if text == "today":
+            self.step_minutes = 5
+            self.duration_minutes = 18 * 60
+
+            # default size = 4 hours
+            self.start_val = self.duration_minutes - 4 * 60
+
+        elif text == "last year":
+            self.step_minutes = 60 * 24
+            self.duration_minutes = 60 * 24 * 30 * 12
+
+            # default size = 1 month
+            self.start_val = self.duration_minutes - 60 * 24 * 30
+
+        else:
+            raise ValueError(f"Unrecognized text {text}")
+
+        self.current_time = (time.time() // (self.step_minutes * 60) + 1) * self.step_minutes * 60
+        self.end_val = self.duration_minutes
+
+        self.update()
 
     def sync_time(self):
-        self.current_time = int(time.time())
+        self.current_time = (time.time() // (self.step_minutes * 60) + 1) * self.step_minutes * 60
         self.update()
 
     def paintEvent(self, event):
@@ -47,18 +60,17 @@ class TimeRangeSlider(QWidget):
 
         width = self.width()
         height = self.height()
-        margin = self.handle_radius + 5
 
         # Track
-        track_rect = QRect(margin, height // 2 - 4, width - 2 * margin, 8)
+        track_rect = QRect(self.margin, height // 2 - 4, width - 2 * self.margin, 8)
         painter.setBrush(Qt.GlobalColor.lightGray)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(track_rect)
 
         # Pixel-per-minute conversion
         pixel_per_min = track_rect.width() / self.duration_minutes
-        x1 = margin + int(self.start_val * pixel_per_min)
-        x2 = margin + int(self.end_val * pixel_per_min)
+        x1 = self.margin + int(self.start_val * pixel_per_min)
+        x2 = self.margin + int(self.end_val * pixel_per_min)
 
         # Active range
         active_rect = QRect(x1, track_rect.top(), x2 - x1, track_rect.height())
@@ -73,18 +85,32 @@ class TimeRangeSlider(QWidget):
         painter.drawEllipse(x2 - self.handle_radius, height // 2 - self.handle_radius,
                             2 * self.handle_radius, 2 * self.handle_radius)
 
-        # Draw time range label
-        painter.setPen(Qt.GlobalColor.black)
-        painter.setFont(QFont("Arial", 14))
-
+        # Time values from timestamps
         ts_start = self._val_to_ts(self.start_val)
         ts_end = self._val_to_ts(self.end_val)
 
-        t_start = datetime.fromtimestamp(ts_start).strftime("%H:%M")
-        t_end = datetime.fromtimestamp(ts_end).strftime("%H:%M")
+        if self.step_minutes > 5:
+            t_start = datetime.fromtimestamp(ts_start).strftime('%m.%d')
+            t_end = datetime.fromtimestamp(ts_end).strftime('%m.%d')
+        else:
+            t_start = datetime.fromtimestamp(ts_start).strftime("%H:%M")
+            t_end = datetime.fromtimestamp(ts_end).strftime("%H:%M")
 
-        label = f"summarize from {t_start} to {t_end}"
-        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignTop, label)
+        painter.setPen(Qt.GlobalColor.black)
+        painter.setFont(QFont("Arial", 14))
+
+        # Get text widths for alignment
+        start_text_width = painter.fontMetrics().horizontalAdvance(t_start)
+        end_text_width = painter.fontMetrics().horizontalAdvance(t_end)
+
+        # Vertical position just above the handles
+        label_y = self.height() // 2 - self.handle_radius - 8
+
+        # Draw start time label
+        painter.drawText(int(x1 - start_text_width / 2), label_y, t_start)
+
+        # Draw end time label
+        painter.drawText(int(x2 - end_text_width / 2), label_y, t_end)
 
 
     def get_interval(self):
@@ -120,12 +146,12 @@ class TimeRangeSlider(QWidget):
         self.dragging_end = False
 
     def _val_to_pixel(self, val):
-        track_width = self.width() - 2 * (self.handle_radius + 5)
-        return (self.handle_radius + 5) + val * track_width / self.duration_minutes
+        track_width = self.width() - 2 * self.margin
+        return self.margin + val * track_width / self.duration_minutes
 
     def _pixel_to_val(self, px):
-        track_width = self.width() - 2 * (self.handle_radius + 5)
-        return int((px - (self.handle_radius + 5)) * self.duration_minutes / track_width)
+        track_width = self.width() - 2 * self.margin
+        return int((px - self.margin) * self.duration_minutes / track_width)
 
     def _val_to_ts(self, val):
         return self.current_time - (self.duration_minutes - val) * 60
