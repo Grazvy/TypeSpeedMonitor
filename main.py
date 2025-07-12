@@ -18,6 +18,7 @@ class App(QWidget):
         super().__init__()
         init_database()
         self.db = DBReader()
+        self.dark_mode = False
         self.init_ui()
 
         self.keyboard_handler = KeyboardHandler(MIN_BIN_SIZE)
@@ -26,7 +27,6 @@ class App(QWidget):
     def init_ui(self):
         self.setWindowTitle("App")
         self.setGeometry(0, 0, 1200, 800)
-        #self.setStyleSheet("background-color: #3f3f63;")
 
         # Main layout
         layout = QVBoxLayout()
@@ -34,15 +34,26 @@ class App(QWidget):
 
         tabs = QTabWidget()
 
-        wpm_graph = WPMGraph(self.db, bin_size=MIN_BIN_SIZE)
+        wpm_graph = WPMGraph(self, self.db, bin_size=MIN_BIN_SIZE)
         tabs.addTab(wpm_graph, "Monitoring")
 
-        summary_graph = SummaryGraph(self.db)
+        summary_graph = SummaryGraph(self, self.db)
         tabs.addTab(summary_graph, "Summary")
 
         layout.addWidget(tabs)
         self.setLayout(layout)
 
+        self.set_style()
+
+    def toggle_darkmode(self):
+        self.dark_mode = not self.dark_mode
+        self.set_style()
+
+    def set_style(self):
+        if self.dark_mode:
+            self.setStyleSheet("background-color: black;")
+        else:
+            self.setStyleSheet("background-color: lightgray")
     def closeEvent(self, event):
         self.keyboard_handler.stop()
         self.db.close()

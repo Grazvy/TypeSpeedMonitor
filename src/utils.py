@@ -31,3 +31,15 @@ def apply_dark_theme(ax):
 
     for spine in ax.spines.values():
         spine.set_color("white")
+
+def apply_light_theme(ax):
+    fig = ax.figure
+    fig.patch.set_facecolor("#FFFFFF")
+    ax.set_facecolor("#FFFFFF")
+    ax.tick_params(colors="black")
+    ax.xaxis.label.set_color("black")
+    ax.yaxis.label.set_color("black")
+    ax.title.set_color("black")
+
+    for spine in ax.spines.values():
+        spine.set_color("black")

@@ -9,13 +9,14 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
-from src.utils import apply_dark_theme
+from src.utils import apply_dark_theme, apply_light_theme
 
 SPP = 1/ 5
 
 class WPMGraph(QFrame):
-    def __init__(self, db, bin_size, mult=15):
+    def __init__(self, main, db, bin_size, mult=15):
         super().__init__()
+        self.main_window = main
         self.mult = mult    # normalized = one minute
         self.seconds_per_pixel = SPP
         self.custom_interval = False
@@ -31,7 +32,7 @@ class WPMGraph(QFrame):
         layout = QVBoxLayout(self)
         controls_layout = QHBoxLayout()
 
-        self.toggle = ToggleDarkmodeButton()
+        self.toggle = ToggleDarkmodeButton(self.main_window)
         controls_layout.addWidget(self.toggle)
 
         self.back_to_start = QPushButton("reset position")
@@ -53,6 +54,8 @@ class WPMGraph(QFrame):
         self.canvas.setFocus()
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
         layout.addWidget(self.canvas)
+
+        self.toggle.modeToggled.connect(self.plot)
 
         # initial plot
         self.plot()
@@ -215,7 +218,10 @@ class WPMGraph(QFrame):
         y_max = self.db.get_max() * 1.25
         ax.set_ylim(0, y_max)
 
-        apply_dark_theme(ax)
+        if self.main_window.dark_mode:
+            apply_dark_theme(ax)
+        else:
+            apply_light_theme(ax)
 
         self.canvas.figure.tight_layout
         self.canvas.draw_idle()

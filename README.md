@@ -10,9 +10,9 @@ pip install matplotlib
 
 todo:
 
-- implement dark mode
 - make settings permanent
 - fix unnecessary key recordings
+- fix rounding bug, 2 min off
 - set max-y based on dynamic interval, not all time max
 - clean up UI-layout
 - clean up UI-colors

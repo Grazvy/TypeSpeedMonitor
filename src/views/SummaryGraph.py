@@ -8,12 +8,13 @@ from matplotlib.figure import Figure
 
 from src.views.TimeRangeSlider import TimeRangeSlider
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
-from src.utils import apply_dark_theme
+from src.utils import apply_dark_theme, apply_light_theme
 
 class SummaryGraph(QFrame):
-    def __init__(self, db):
+    def __init__(self, main, db):
         super().__init__()
         self.db = db
+        self.main_window = main
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout = QVBoxLayout(self)
@@ -26,7 +27,7 @@ class SummaryGraph(QFrame):
         dummy.setFixedWidth(0)
         controls_layout.addWidget(dummy)
 
-        self.toggle = ToggleDarkmodeButton()
+        self.toggle = ToggleDarkmodeButton(self.main_window)
         controls_layout.addWidget(self.toggle)
 
         self.slider = TimeRangeSlider()
@@ -47,6 +48,8 @@ class SummaryGraph(QFrame):
         self.canvas.setMaximumHeight(500)
         layout.addWidget(self.canvas)
 
+        self.toggle.modeToggled.connect(self.plot_summary)
+
         self.start_time, self.end_time = self.slider.get_interval()
         self.title_from = datetime.fromtimestamp(self.start_time).strftime("%H:%M")
         self.title_to = datetime.fromtimestamp(self.end_time).strftime("%H:%M")
@@ -54,8 +57,6 @@ class SummaryGraph(QFrame):
         timer = QTimer(self)
         timer.timeout.connect(self.plot_summary)
         timer.start(500)
-
-
 
         # initial plot
         self.plot_summary()
@@ -78,8 +79,8 @@ class SummaryGraph(QFrame):
         data = self.db.read_data(self.start_time, self.end_time)
         wpm_values = [val for _, val in data if val is not None]
 
-        if not wpm_values:
-            ax.set_title("No data available")
+        if len(set(wpm_values)) <= 1:
+            ax.set_title("Not enough data available")
             self.canvas.draw_idle()
             return
 
@@ -102,7 +103,10 @@ class SummaryGraph(QFrame):
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
         ax.set_ylim(0, max(percentages) * 1.1)
 
-        apply_dark_theme(ax)
+        if self.main_window.dark_mode:
+            apply_dark_theme(ax)
+        else:
+            apply_light_theme(ax)
 
         self.canvas.figure.tight_layout()
         self.canvas.draw_idle()
