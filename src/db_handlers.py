@@ -40,10 +40,14 @@ class DBReader():
         )
         return self.cur.fetchall()
 
-    def get_max(self):
-        self.cur.execute(f"SELECT MAX(value) FROM log_data")
+    def get_max(self, point, distance):
+        self.cur.execute("""
+            SELECT MAX(value)
+            FROM log_data
+            WHERE timestamp BETWEEN ? AND ?
+        """, (point - distance, point + distance))
         result = self.cur.fetchone()
-        return result[0] if result else 60
+        return result[0] if result and result[0] is not None else 60
 
     def close(self):
         print("Closing database reading connection...")

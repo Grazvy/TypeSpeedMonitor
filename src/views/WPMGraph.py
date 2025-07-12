@@ -203,7 +203,7 @@ class WPMGraph(QFrame):
         ax.set_xticklabels(label_strings[first_label:], rotation=45, ha='right')
 
         title = ""
-        center_ts = (time_bins[0] + time_bins[-1]) / 2
+        center_ts = (time_bins[0] * 2 + time_bins[-1] * 3) / 5
         dt = datetime.fromtimestamp(center_ts)
         if self.mult <= 60:
             today = datetime.now()
@@ -211,18 +211,28 @@ class WPMGraph(QFrame):
                 title = "today"
             else:
                 title = dt.strftime("%d %b %Y")
+            distance = 60 * 60 * 24    # 1 day
 
-        elif self.mult <= 60 * 24 * 7:
+        elif self.mult == 60 * 24:
             title = dt.strftime("%b %Y")
+            distance = 60 * 60 * 24 * 7 * 2  # 2 weeks
+
+        elif self.mult == 60 * 24 * 7:
+            title = dt.strftime("%b %Y")
+            distance = 60 * 60 * 24 * 30 * 2  # 2 months
 
         elif self.mult == 60 * 24 * 30:
             title = dt.strftime("%Y")
+            distance = 60 * 60 * 24 * 30 * 12  # 1 year
+
+        else:
+            distance = 60 * 60 * 24 * 30 * 12 * 10  # 1 decade
 
         ax.set_ylabel('Words Per Minute (WPM)', fontsize=12)
         ax.set_title(title, fontsize=12, fontweight='bold')
         ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
 
-        y_max = self.db.get_max() * 1.25
+        y_max = self.db.get_max(center_ts, distance) * 1.25
         ax.set_ylim(0, y_max)
 
         if self.main_window.dark_mode:
