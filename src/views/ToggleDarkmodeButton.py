@@ -29,7 +29,7 @@ class ToggleDarkmodeButton(QPushButton):
         else:
             self.setText("🌙")
             self.shadow.setColor(QColor(0, 0, 0, 80))
-            self.setStyleSheet("background-color: lightgray;"
+            self.setStyleSheet("background-color: #cbe7e3;"
                                "border-radius: 10px;")
 
     def setupShadow(self):

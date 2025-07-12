@@ -26,6 +26,7 @@ class WPMGraph(QFrame):
         self.interval_end = time.time() + bin_size
         self.interval_size = self.width() * self.seconds_per_pixel * mult
 
+        self.setStyleSheet("background: transparent;")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setToolTip("scroll to change the interval")
         QToolTip.setFont(QFont("Arial", 18))

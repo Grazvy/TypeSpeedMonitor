@@ -10,6 +10,7 @@ from src.views.TimeRangeSlider import TimeRangeSlider
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
 from src.utils import apply_dark_theme, apply_light_theme
 
+
 class SummaryGraph(QFrame):
     def __init__(self, main, db):
         super().__init__()
@@ -17,6 +18,7 @@ class SummaryGraph(QFrame):
         self.main_window = main
         self.color = '#537575' if main.dark_mode else 'steelblue'
 
+        self.setStyleSheet("background: transparent;")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout = QVBoxLayout(self)
         controls = QWidget()
@@ -71,10 +73,10 @@ class SummaryGraph(QFrame):
         self.start_time = start
         self.end_time = end
         current = self.label_selection.currentText()
-        if current == "today":
+        if current == "day":
             self.title_from = datetime.fromtimestamp(start).strftime("%H:%M")
             self.title_to = datetime.fromtimestamp(end).strftime("%H:%M")
-        elif current == "last year":
+        else:
             self.title_from = datetime.fromtimestamp(start).strftime("%d %b %Y")
             self.title_to = datetime.fromtimestamp(end).strftime("%d %b %Y")
 
@@ -87,27 +89,26 @@ class SummaryGraph(QFrame):
 
         if len(set(wpm_values)) <= 1:
             ax.set_title("Not enough data available")
-            self.canvas.draw_idle()
-            return
 
-        bins = np.arange(min(wpm_values), max(wpm_values) + bin_width, bin_width)
-        counts, bin_edges = np.histogram(wpm_values, bins=bins)
+        else:
+            bins = np.arange(min(wpm_values), max(wpm_values) + bin_width, bin_width)
+            counts, bin_edges = np.histogram(wpm_values, bins=bins)
 
-        percentages = (counts / sum(counts)) * 100
-        bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
+            percentages = (counts / sum(counts)) * 100
+            bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
 
-        ax.bar(bin_centers, percentages, width=bin_width,
-               color=self.color, alpha=0.7, align='center')
+            ax.bar(bin_centers, percentages, width=bin_width,
+                   color=self.color, alpha=0.7, align='center')
 
-        x_min, x_max = min(wpm_values), max(wpm_values)
-        x_pad = (x_max - x_min) * 0.1
-        ax.set_xlim(x_min - x_pad, x_max + x_pad)
+            x_min, x_max = min(wpm_values), max(wpm_values)
+            x_pad = (x_max - x_min) * 0.1
+            ax.set_xlim(x_min - x_pad, x_max + x_pad)
 
-        ax.set_title(f"Distribution from {self.title_from} to {self.title_to}", fontsize=13, fontweight='bold')
-        ax.set_xlabel("WPM")
-        ax.set_ylabel("Percentage (%)")
-        ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
-        ax.set_ylim(0, max(percentages) * 1.1)
+            ax.set_title(f"Distribution from {self.title_from} to {self.title_to}", fontsize=13, fontweight='bold')
+            ax.set_xlabel("WPM")
+            ax.set_ylabel("Percentage (%)")
+            ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
+            ax.set_ylim(0, max(percentages) * 1.1)
 
         if self.main_window.dark_mode:
             apply_dark_theme(ax)

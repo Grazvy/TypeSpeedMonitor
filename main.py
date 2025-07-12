@@ -35,13 +35,13 @@ class App(QWidget):
 
         tabs = QTabWidget()
         tabs.setStyleSheet("""
-            QTabWidget::pane {
-                background: transparent;
-                border: none;
-            }
-            QTabBar {
-                background: transparent;
-            }
+        QTabWidget::pane {
+            background: transparent;
+            border: none;
+        }
+        QTabBar {
+            background: transparent;
+        }
         """)
 
         wpm_graph = WPMGraph(self, self.db, bin_size=MIN_BIN_SIZE)
@@ -65,7 +65,7 @@ class App(QWidget):
             # dark arctic
             self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.1 #004a4a, stop: 0.6 #082026);")
         else:
-            self.setStyleSheet("background-color: lightgray")
+            self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.3 #cbe7e3, stop: 0.85 #05999e);")
     def closeEvent(self, event):
         self.keyboard_handler.stop()
         self.db.close()

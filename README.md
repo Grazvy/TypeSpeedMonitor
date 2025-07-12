@@ -17,4 +17,6 @@ todo:
 - clean up UI-layout
 - clean up UI-colors
 - make executables
+- draw dates on graph instead of title
+- fewer horizontal lines in summary
  

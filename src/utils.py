@@ -22,7 +22,7 @@ def init_database():
 
 def apply_dark_theme(ax):
     fig = ax.figure
-    fig.patch.set_facecolor("#082026")
+    fig.patch.set_facecolor((0.0, 0.0, 0.0, 0.0))
     ax.set_facecolor("#0a3b3b")
     ax.tick_params(colors="#ECEFF4")
     ax.xaxis.label.set_color("#ECEFF4")
@@ -34,8 +34,8 @@ def apply_dark_theme(ax):
 
 def apply_light_theme(ax):
     fig = ax.figure
-    fig.patch.set_facecolor("#ECEFF4")
-    ax.set_facecolor("#ECEFF4")
+    fig.patch.set_facecolor((0.0, 0.0, 0.0, 0.0))
+    ax.set_facecolor("#cbe7e3")
     ax.tick_params(colors="#3B4252")
     ax.xaxis.label.set_color("#3B4252")
     ax.yaxis.label.set_color("#3B4252")
