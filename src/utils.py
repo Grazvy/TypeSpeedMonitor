@@ -22,24 +22,24 @@ def init_database():
 
 def apply_dark_theme(ax):
     fig = ax.figure
-    fig.patch.set_facecolor("#222222")
-    ax.set_facecolor("#222222")
-    ax.tick_params(colors="white")
-    ax.xaxis.label.set_color("white")
-    ax.yaxis.label.set_color("white")
-    ax.title.set_color("white")
+    fig.patch.set_facecolor("#082026")
+    ax.set_facecolor("#0a3b3b")
+    ax.tick_params(colors="#ECEFF4")
+    ax.xaxis.label.set_color("#ECEFF4")
+    ax.yaxis.label.set_color("#ECEFF4")
+    ax.title.set_color("#ECEFF4")
 
     for spine in ax.spines.values():
-        spine.set_color("white")
+        spine.set_color("#ECEFF4")
 
 def apply_light_theme(ax):
     fig = ax.figure
-    fig.patch.set_facecolor("#FFFFFF")
-    ax.set_facecolor("#FFFFFF")
-    ax.tick_params(colors="black")
-    ax.xaxis.label.set_color("black")
-    ax.yaxis.label.set_color("black")
-    ax.title.set_color("black")
+    fig.patch.set_facecolor("#ECEFF4")
+    ax.set_facecolor("#ECEFF4")
+    ax.tick_params(colors="#3B4252")
+    ax.xaxis.label.set_color("#3B4252")
+    ax.yaxis.label.set_color("#3B4252")
+    ax.title.set_color("#3B4252")
 
     for spine in ax.spines.values():
-        spine.set_color("black")
+        spine.set_color("#3B4252")

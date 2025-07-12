@@ -1,7 +1,7 @@
 import signal
 import sys
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QTabWidget
 
 from src.keyboard_handler import KeyboardHandler
@@ -14,6 +14,7 @@ from src.views.SummaryGraph import SummaryGraph
 MIN_BIN_SIZE = 5
 
 class App(QWidget):
+    modeToggled = pyqtSignal()
     def __init__(self):
         super().__init__()
         init_database()
@@ -33,6 +34,15 @@ class App(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         tabs = QTabWidget()
+        tabs.setStyleSheet("""
+            QTabWidget::pane {
+                background: transparent;
+                border: none;
+            }
+            QTabBar {
+                background: transparent;
+            }
+        """)
 
         wpm_graph = WPMGraph(self, self.db, bin_size=MIN_BIN_SIZE)
         tabs.addTab(wpm_graph, "Monitoring")
@@ -48,10 +58,12 @@ class App(QWidget):
     def toggle_darkmode(self):
         self.dark_mode = not self.dark_mode
         self.set_style()
+        self.modeToggled.emit()
 
     def set_style(self):
         if self.dark_mode:
-            self.setStyleSheet("background-color: black;")
+            # dark arctic
+            self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.1 #004a4a, stop: 0.6 #082026);")
         else:
             self.setStyleSheet("background-color: lightgray")
     def closeEvent(self, event):

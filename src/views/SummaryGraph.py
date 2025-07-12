@@ -15,6 +15,7 @@ class SummaryGraph(QFrame):
         super().__init__()
         self.db = db
         self.main_window = main
+        self.color = '#537575' if main.dark_mode else 'steelblue'
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         layout = QVBoxLayout(self)
@@ -48,7 +49,7 @@ class SummaryGraph(QFrame):
         self.canvas.setMaximumHeight(500)
         layout.addWidget(self.canvas)
 
-        self.toggle.modeToggled.connect(self.plot_summary)
+        self.main_window.modeToggled.connect(self.toggle_darkmode)
 
         self.start_time, self.end_time = self.slider.get_interval()
         self.title_from = datetime.fromtimestamp(self.start_time).strftime("%H:%M")
@@ -59,6 +60,11 @@ class SummaryGraph(QFrame):
         timer.start(500)
 
         # initial plot
+        self.plot_summary()
+
+    def toggle_darkmode(self):
+        self.color = '#537575' if self.main_window.dark_mode else 'steelblue'
+        self.toggle.setIcon()
         self.plot_summary()
 
     def set_interval(self, start, end):
@@ -91,7 +97,7 @@ class SummaryGraph(QFrame):
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
 
         ax.bar(bin_centers, percentages, width=bin_width,
-               color='darkgreen', alpha=0.7, align='center')
+               color=self.color, alpha=0.7, align='center')
 
         x_min, x_max = min(wpm_values), max(wpm_values)
         x_pad = (x_max - x_min) * 0.1

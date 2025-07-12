@@ -17,6 +17,7 @@ class WPMGraph(QFrame):
     def __init__(self, main, db, bin_size, mult=15):
         super().__init__()
         self.main_window = main
+        self.color = '#537575' if main.dark_mode else 'steelblue'
         self.mult = mult    # normalized = one minute
         self.seconds_per_pixel = SPP
         self.custom_interval = False
@@ -35,16 +36,16 @@ class WPMGraph(QFrame):
         self.toggle = ToggleDarkmodeButton(self.main_window)
         controls_layout.addWidget(self.toggle)
 
-        self.back_to_start = QPushButton("reset position")
-        self.back_to_start.clicked.connect(self.reset_position)
-        controls_layout.addWidget(self.back_to_start)
-
         self.label_selection = QComboBox()
         all_mults = [1, 5, 15, 30, 60, 24 * 60, 7 * 24 * 60, 30 * 24 * 60, 12 * 30 * 24 * 60]
         self.label_selection.addItems(["1 min", "5 min", "15 min", "30 min", "60 min", "1 day", "1 week", "1 month", "1 year"])
         self.label_selection.setCurrentIndex(all_mults.index(mult))
         self.label_selection.currentTextChanged.connect(self.update_mult)
         controls_layout.addWidget(self.label_selection)
+
+        self.back_to_start = QPushButton("reset position")
+        self.back_to_start.clicked.connect(self.reset_position)
+        controls_layout.addWidget(self.back_to_start)
 
         layout.addLayout(controls_layout)
 
@@ -55,7 +56,7 @@ class WPMGraph(QFrame):
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
         layout.addWidget(self.canvas)
 
-        self.toggle.modeToggled.connect(self.plot)
+        self.main_window.modeToggled.connect(self.toggle_darkmode)
 
         # initial plot
         self.plot()
@@ -64,6 +65,11 @@ class WPMGraph(QFrame):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plot)
         self.timer.start(2_000)
+
+    def toggle_darkmode(self):
+        self.color = '#537575' if self.main_window.dark_mode else 'steelblue'
+        self.toggle.setIcon()
+        self.plot()
 
     def resizeEvent(self, event):
         self.interval_size = self.width() * self.seconds_per_pixel * self.mult
@@ -151,7 +157,7 @@ class WPMGraph(QFrame):
 
         if valid_mask.any():
             ax.bar(x_vals[valid_mask], y_vals[valid_mask], width=self.bin_size,
-                   color='steelblue', alpha=0.8, align='center')
+                   color=self.color, alpha=0.8, align='center')
 
         ax.set_xlim(time_bins[0], time_bins[-1])
 
