@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PyQt6.QtGui import QMouseEvent, QPainter, QFont
+from PyQt6.QtGui import QMouseEvent, QPainter, QFont, QColor
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, pyqtSignal, QTimer, QRect
 
@@ -22,6 +22,13 @@ class TimeRangeSlider(QWidget):
         self.margin = self.handle_radius + self.padding
         self.dragging_start = False
         self.dragging_end = False
+
+        self.colors = {
+            "track": Qt.GlobalColor.white,
+            "active": Qt.GlobalColor.white,
+            "handle": Qt.GlobalColor.white,
+            "text": Qt.GlobalColor.white,
+        }
 
         timer = QTimer(self)
         timer.timeout.connect(self.sync_time)
@@ -57,6 +64,23 @@ class TimeRangeSlider(QWidget):
         self.rangeChanged.emit(self._val_to_ts(self.start_val), self._val_to_ts(self.end_val))
 
         self.update()
+    def apply_dark_theme(self):
+        self.colors = {
+            "track": QColor("#699191"),
+            "active": QColor("#004a4a"),
+            "handle": Qt.GlobalColor.gray,
+            "text": QColor("#eceff4"),
+        }
+        self.update()
+
+    def apply_light_theme(self):
+        self.colors = {
+            "track": QColor("#cbe7e3"),
+            "active": QColor("#4682b4"),
+            "handle": Qt.GlobalColor.gray,
+            "text": Qt.GlobalColor.black,
+        }
+        self.update()
 
     def sync_time(self):
         self.current_time = (time.time() // (self.step_minutes * 60) + 1) * self.step_minutes * 60
@@ -71,7 +95,7 @@ class TimeRangeSlider(QWidget):
 
         # Track
         track_rect = QRect(self.margin, height // 2 - 4, width - 2 * self.margin, 8)
-        painter.setBrush(Qt.GlobalColor.lightGray)
+        painter.setBrush(self.colors["track"])
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(track_rect)
 
@@ -82,12 +106,12 @@ class TimeRangeSlider(QWidget):
 
         # Active range
         active_rect = QRect(x1, track_rect.top(), x2 - x1, track_rect.height())
-        painter.setBrush(Qt.GlobalColor.blue)
+        painter.setBrush(self.colors["active"])
         painter.drawRect(active_rect)
 
         # Draw circular handles
-        painter.setBrush(Qt.GlobalColor.gray)
-        painter.setPen(Qt.GlobalColor.gray)
+        painter.setBrush(self.colors["handle"])
+        painter.setPen(self.colors["handle"])
         painter.drawEllipse(x1 - self.handle_radius, height // 2 - self.handle_radius,
                             2 * self.handle_radius, 2 * self.handle_radius)
         painter.drawEllipse(x2 - self.handle_radius, height // 2 - self.handle_radius,
@@ -104,7 +128,7 @@ class TimeRangeSlider(QWidget):
             t_start = datetime.fromtimestamp(ts_start).strftime("%H:%M")
             t_end = datetime.fromtimestamp(ts_end).strftime("%H:%M")
 
-        painter.setPen(Qt.GlobalColor.black)
+        painter.setPen(self.colors["text"])
         painter.setFont(QFont("Arial", 14))
 
         # Get text widths for alignment

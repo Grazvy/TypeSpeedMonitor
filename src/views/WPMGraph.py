@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
 from src.utils import apply_dark_theme, apply_light_theme
 
-SPP = 1/ 5
+SPP = 1 / 5
 
 class WPMGraph(QFrame):
     def __init__(self, main, db, bin_size, mult=15):
@@ -27,7 +27,9 @@ class WPMGraph(QFrame):
         self.interval_size = self.width() * self.seconds_per_pixel * mult
 
         self.setStyleSheet("background: transparent;")
+        self.setContentsMargins(26, 57, 15, 26)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.setToolTip("scroll to change the interval")
         QToolTip.setFont(QFont("Arial", 18))
 
@@ -57,18 +59,26 @@ class WPMGraph(QFrame):
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
         layout.addWidget(self.canvas)
 
-        self.main_window.modeToggled.connect(self.toggle_darkmode)
+        self.main_window.modeToggled.connect(self.apply_style)
 
-        # initial plot
-        self.plot()
+        # initial plot and theme setting
+        self.apply_style()
 
         # auto-refresh
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plot)
         self.timer.start(2_000)
 
-    def toggle_darkmode(self):
-        self.color = '#537575' if self.main_window.dark_mode else 'steelblue'
+    def apply_style(self):
+        if self.main_window.dark_mode:
+            self.label_selection.setStyleSheet("background: #0a3b3b; color: #eceff4;")
+            self.back_to_start.setStyleSheet("background: #0a3b3b; color: #eceff4")
+            self.color = '#537575'
+        else:
+            self.label_selection.setStyleSheet("background: #cbe7e3; color: black;")
+            self.back_to_start.setStyleSheet("background: #cbe7e3; color: black;")
+            self.color = 'steelblue'
+
         self.toggle.setIcon()
         self.plot()
 

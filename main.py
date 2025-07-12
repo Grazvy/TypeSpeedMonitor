@@ -65,6 +65,7 @@ class App(QWidget):
             # dark arctic
             self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.1 #004a4a, stop: 0.6 #082026);")
         else:
+            # light aquatic
             self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.3 #cbe7e3, stop: 0.85 #05999e);")
     def closeEvent(self, event):
         self.keyboard_handler.stop()

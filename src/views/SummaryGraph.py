@@ -19,7 +19,7 @@ class SummaryGraph(QFrame):
         self.color = '#537575' if main.dark_mode else 'steelblue'
 
         self.setStyleSheet("background: transparent;")
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout = QVBoxLayout(self)
         controls = QWidget()
         controls_layout = QHBoxLayout()
@@ -51,21 +51,29 @@ class SummaryGraph(QFrame):
         self.canvas.setMaximumHeight(500)
         layout.addWidget(self.canvas)
 
-        self.main_window.modeToggled.connect(self.toggle_darkmode)
+        self.main_window.modeToggled.connect(self.apply_style)
 
         self.start_time, self.end_time = self.slider.get_interval()
         self.title_from = datetime.fromtimestamp(self.start_time).strftime("%H:%M")
         self.title_to = datetime.fromtimestamp(self.end_time).strftime("%H:%M")
 
+        # initial plot and theme setting
+        self.apply_style()
+
         timer = QTimer(self)
         timer.timeout.connect(self.plot_summary)
         timer.start(500)
 
-        # initial plot
-        self.plot_summary()
+    def apply_style(self):
+        if self.main_window.dark_mode:
+            self.label_selection.setStyleSheet("background: #0a3b3b; color: #eceff4;")
+            self.slider.apply_dark_theme()
+            self.color = '#537575'
+        else:
+            self.label_selection.setStyleSheet("background: #cbe7e3; color: black;")
+            self.slider.apply_light_theme()
+            self.color = 'steelblue'
 
-    def toggle_darkmode(self):
-        self.color = '#537575' if self.main_window.dark_mode else 'steelblue'
         self.toggle.setIcon()
         self.plot_summary()
 
