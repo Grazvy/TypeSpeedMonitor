@@ -112,11 +112,24 @@ class SummaryGraph(QFrame):
             x_pad = (x_max - x_min) * 0.1
             ax.set_xlim(x_min - x_pad, x_max + x_pad)
 
+            # Determine x-axis ticks step size: 10 or 20
+            wpm_range = x_max - x_min
+            x_step = 20 if wpm_range > 100 else 10
+            xticks = np.arange(round((x_min - x_pad) / x_step) * x_step,
+                               round((x_max + x_pad) / x_step) * x_step + x_step,
+                               x_step)
+            ax.set_xticks(xticks)
+
             ax.set_title(f"Distribution from {self.title_from} to {self.title_to}", fontsize=13, fontweight='bold')
             ax.set_xlabel("WPM")
             ax.set_ylabel("Percentage (%)")
             ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
-            ax.set_ylim(0, max(percentages) * 1.1)
+
+            max_y = max(percentages) * 1.1
+            yticks = np.linspace(0, max_y, num=5)
+            rounded_yticks = [round(y) for y in yticks]
+            ax.set_ylim(0, max_y)
+            ax.set_yticks(rounded_yticks)
 
         if self.main_window.dark_mode:
             apply_dark_theme(ax)
