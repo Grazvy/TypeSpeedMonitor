@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QTabWidget
 
 from src.keyboard_handler import KeyboardHandler
 from src.db_handlers import DBReader
-from src.utils import init_database
+from src.utils import init_database, load_config, save_config
 
 from src.views.WPMGraph import WPMGraph
 from src.views.SummaryGraph import SummaryGraph
@@ -19,7 +19,8 @@ class App(QWidget):
         super().__init__()
         init_database()
         self.db = DBReader()
-        self.dark_mode = False
+        self.config = load_config()
+        self.dark_mode = self.config['dark_mode']
         self.init_ui()
 
         self.keyboard_handler = KeyboardHandler(MIN_BIN_SIZE)
@@ -59,6 +60,8 @@ class App(QWidget):
         self.dark_mode = not self.dark_mode
         self.set_style()
         self.modeToggled.emit()
+        self.config["dark_mode"] = self.dark_mode
+        save_config(self.config)
 
     def set_style(self):
         if self.dark_mode:

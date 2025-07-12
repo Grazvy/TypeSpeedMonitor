@@ -10,11 +10,9 @@ pip install matplotlib
 
 todo:
 
-- make settings permanent
 - fix unnecessary key recordings
 - clean up UI-layout
 - make executables
-- fewer horizontal lines in summary
 - fix expanding/compression bug
 
 - draw dates on graph instead of title

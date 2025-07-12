@@ -1,5 +1,7 @@
+import json
 import os
 import sqlite3
+import sys
 
 from appdirs import user_data_dir
 
@@ -20,6 +22,33 @@ def init_database():
     conn.close()
 
 
+def get_config_path():
+    # Use application directory whether run normally or with PyInstaller
+    if getattr(sys, 'frozen', False):
+        base_dir = sys._MEIPASS  # PyInstaller temp directory
+        user_dir = os.path.dirname(sys.executable)
+    else:
+        user_dir = os.path.dirname(os.path.abspath(__file__))
+
+    return os.path.join(user_dir, 'config.json')
+
+
+def load_config():
+    path = get_config_path()
+    print(path)
+    if os.path.exists(path):
+        with open(path, 'r') as f:
+            return json.load(f)
+    else:
+        return {}  # default empty config
+
+
+def save_config(config_dict):
+    path = get_config_path()
+    with open(path, 'w') as f:
+        json.dump(config_dict, f, indent=4)
+
+
 def apply_dark_theme(ax):
     fig = ax.figure
     fig.patch.set_facecolor((0.0, 0.0, 0.0, 0.0))
@@ -31,6 +60,7 @@ def apply_dark_theme(ax):
 
     for spine in ax.spines.values():
         spine.set_color("#ECEFF4")
+
 
 def apply_light_theme(ax):
     fig = ax.figure

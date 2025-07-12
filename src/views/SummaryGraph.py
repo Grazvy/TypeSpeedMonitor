@@ -8,7 +8,7 @@ from matplotlib.figure import Figure
 
 from src.views.TimeRangeSlider import TimeRangeSlider
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
-from src.utils import apply_dark_theme, apply_light_theme
+from src.utils import apply_dark_theme, apply_light_theme, save_config
 
 
 class SummaryGraph(QFrame):
@@ -16,7 +16,7 @@ class SummaryGraph(QFrame):
         super().__init__()
         self.db = db
         self.main_window = main
-        self.color = '#537575' if main.dark_mode else 'steelblue'
+        self.color = '#699191' if main.dark_mode else 'steelblue'
 
         self.setStyleSheet("background: transparent;")
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -37,8 +37,10 @@ class SummaryGraph(QFrame):
         self.slider.rangeChanged.connect(self.set_interval)
 
         self.label_selection = QComboBox()
-        self.label_selection.addItems(["day", "month", "year"])
-        self.label_selection.currentTextChanged.connect(self.slider.update_format)
+        labels = ["day", "month", "year"]
+        self.label_selection.addItems(labels)
+        self.label_selection.setCurrentIndex(labels.index(main.config["summary_of"]))
+        self.label_selection.currentTextChanged.connect(self.update_slider)
 
         controls_layout.addWidget(self.label_selection)
         controls_layout.addWidget(self.slider)
@@ -64,11 +66,16 @@ class SummaryGraph(QFrame):
         timer.timeout.connect(self.plot_summary)
         timer.start(500)
 
+    def update_slider(self, text):
+        self.slider.update_format(text)
+        self.main_window.config["summary_of"] = text
+        save_config(self.main_window.config)
+
     def apply_style(self):
         if self.main_window.dark_mode:
             self.label_selection.setStyleSheet("background: #0a3b3b; color: #eceff4;")
             self.slider.apply_dark_theme()
-            self.color = '#537575'
+            self.color = '#699191'
         else:
             self.label_selection.setStyleSheet("background: #cbe7e3; color: black;")
             self.slider.apply_light_theme()

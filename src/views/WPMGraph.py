@@ -9,15 +9,16 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
-from src.utils import apply_dark_theme, apply_light_theme
+from src.utils import apply_dark_theme, apply_light_theme, save_config
 
 SPP = 1 / 5
 
 class WPMGraph(QFrame):
-    def __init__(self, main, db, bin_size, mult=15):
+    def __init__(self, main, db, bin_size):
         super().__init__()
         self.main_window = main
-        self.color = '#537575' if main.dark_mode else 'steelblue'
+        mult = main.config["mult"]
+        self.color = '#699191' if main.dark_mode else 'steelblue'
         self.mult = mult    # normalized = one minute
         self.seconds_per_pixel = SPP
         self.custom_interval = False
@@ -73,7 +74,7 @@ class WPMGraph(QFrame):
         if self.main_window.dark_mode:
             self.label_selection.setStyleSheet("background: #0a3b3b; color: #eceff4;")
             self.back_to_start.setStyleSheet("background: #0a3b3b; color: #eceff4")
-            self.color = '#537575'
+            self.color = '#699191'
         else:
             self.label_selection.setStyleSheet("background: #cbe7e3; color: black;")
             self.back_to_start.setStyleSheet("background: #cbe7e3; color: black;")
@@ -138,6 +139,9 @@ class WPMGraph(QFrame):
         self.interval_size = (self.interval_size // self.mult) * new_mult
         self.mult = new_mult
         self.plot()
+
+        self.main_window.config["mult"] = new_mult
+        save_config(self.main_window.config)
 
 
     def plot(self):
