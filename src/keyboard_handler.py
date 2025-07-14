@@ -5,6 +5,23 @@ from src.db_handlers import DBWriter
 
 RECORDING_THRESHOLD = 1.0
 MIN_RECORDINGS = 8
+EXCLUDED_KEYS = {
+    keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r,
+    keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r,
+    keyboard.Key.cmd, keyboard.Key.cmd_l, keyboard.Key.cmd_r,
+    keyboard.Key.tab, keyboard.Key.enter, keyboard.Key.esc,
+    keyboard.Key.backspace, keyboard.Key.delete,
+    keyboard.Key.up, keyboard.Key.down, keyboard.Key.left, keyboard.Key.right,
+    keyboard.Key.home, keyboard.Key.end, keyboard.Key.page_up, keyboard.Key.page_down
+}
+
+EXCEPTIONS = {
+    '(', ')', '[', ']', '{', '}', '<', '>',
+    ':', ';', ',', '.', '?', '!',
+    '+', '-', '*', '/', '%', '=',
+    '&', '|', '^', '~', '!',
+    '@', '#', '$', '\\', '_', '`', '"', "'",
+}
 
 class KeyboardHandler:
     def __init__(self, min_bin_size):
@@ -13,14 +30,24 @@ class KeyboardHandler:
         self.last_key_press = time.time()
         self.min_bin_size = min_bin_size
         self.current_bin = []
+        self.excluded_keys_pressed = set()
 
     def start_monitoring(self):
-        self.listener = keyboard.Listener(on_press=lambda key: self.on_press(key))
+        #self.listener = keyboard.Listener(on_press=lambda key: self.on_press(key))
+        self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         self.listener.start()
 
     def on_press(self, key):
-        # only monitor characters
-        if not hasattr(key, 'char') or key.char is None:
+        # ignore special keys
+        if key in EXCLUDED_KEYS:
+            self.excluded_keys_pressed.add(key)
+            return
+
+        # ignore non-characters
+        if not hasattr(key, 'char'):
+            return
+
+        if self.excluded_keys_pressed and key.char not in EXCEPTIONS:
             return
 
         current_time = time.time()
@@ -33,6 +60,11 @@ class KeyboardHandler:
             self.current_bin.append(time_passed)
 
         self.last_key_press = current_time
+
+    def on_release(self, key):
+        # Remove from pressed keys set if released
+        if key in self.excluded_keys_pressed:
+            self.excluded_keys_pressed.discard(key)
 
     def process_current_bin(self):
         if len(self.current_bin) < MIN_RECORDINGS:
