@@ -12,7 +12,6 @@ todo:
 
 - clean up UI-layout
 - make executables
-- fix expanding/compression bug
 
 - default config.json
 - draw dates on graph instead of title
