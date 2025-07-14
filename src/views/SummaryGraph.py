@@ -58,8 +58,12 @@ class SummaryGraph(QFrame):
         self.main_window.modeToggled.connect(self.apply_style)
 
         self.start_time, self.end_time = self.slider.get_interval()
-        self.title_from = datetime.fromtimestamp(self.start_time).strftime("%H:%M")
-        self.title_to = datetime.fromtimestamp(self.end_time).strftime("%H:%M")
+        if main.config["summary_of"] == "day":
+            self.title_from = datetime.fromtimestamp(self.start_time).strftime("%H:%M")
+            self.title_to = datetime.fromtimestamp(self.end_time).strftime("%H:%M")
+        else:
+            self.title_from = datetime.fromtimestamp(self.start_time).strftime("%d %b %Y")
+            self.title_to = datetime.fromtimestamp(self.end_time).strftime("%d %b %Y")
 
         # initial plot and theme setting
         self.apply_style()
