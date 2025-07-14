@@ -17,7 +17,8 @@ class TimeRangeSlider(QWidget):
         self.update_format(interval)
 
         # UI state
-        self.handle_radius = 7
+        self.handle_radius = 9
+        self.track_height = 10
         self.padding = 20
         self.margin = self.handle_radius + self.padding
         self.dragging_start = False
@@ -78,7 +79,7 @@ class TimeRangeSlider(QWidget):
             "track": QColor("#cbe7e3"),
             "active": QColor("#4682b4"),
             "handle": Qt.GlobalColor.gray,
-            "text": Qt.GlobalColor.black,
+            "text": QColor('#3B4252'),
         }
         self.update()
 
@@ -94,10 +95,14 @@ class TimeRangeSlider(QWidget):
         height = self.height()
 
         # Track
-        track_rect = QRect(self.margin, height // 2 - 4, width - 2 * self.margin, 8)
+        track_rect = QRect(self.margin, int(height // 2 - self.track_height / 2), width - 2 * self.margin, self.track_height)
         painter.setBrush(self.colors["track"])
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(track_rect)
+        painter.drawEllipse(self.margin - self.track_height // 2, height // 2 - self.track_height // 2,
+                            self.track_height, self.track_height)
+        painter.drawEllipse(width - self.margin - self.track_height // 2, height // 2 - self.track_height // 2,
+                            self.track_height, self.track_height)
 
         # Pixel-per-minute conversion
         pixel_per_min = track_rect.width() / self.duration_minutes

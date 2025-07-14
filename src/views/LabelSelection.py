@@ -4,6 +4,10 @@ from PyQt6.QtGui import QFont, QPainter, QColor
 
 
 class CustomComboBox(QComboBox):
+    def __init__(self, prefix):
+        super().__init__()
+        self.text_color = QColor("black")
+        self.prefix = prefix
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -12,7 +16,6 @@ class CustomComboBox(QComboBox):
         self.style().drawComplexControl(self.style().ComplexControl.CC_ComboBox, opt, painter, self)
 
         # Prepare text styles
-        prefix = "step size: "
         value = self.currentText()
 
         prefix_font = QFont("Arial", 14)
@@ -21,18 +24,18 @@ class CustomComboBox(QComboBox):
         value_font.setBold(True)
 
         painter.setFont(prefix_font)
-        prefix_width = painter.fontMetrics().horizontalAdvance(prefix)
+        prefix_width = painter.fontMetrics().horizontalAdvance(self.prefix)
 
         rect = self.rect().adjusted(10, 0, -30, 0)
 
         # Draw prefix
         painter.setFont(prefix_font)
-        painter.setPen(QColor(80, 80, 80))
-        painter.drawText(rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, prefix)
+        painter.setPen(self.text_color)
+        painter.drawText(rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, self.prefix)
 
         # Draw value
         painter.setFont(value_font)
-        painter.setPen(QColor(0, 0, 0))
+        painter.setPen(self.text_color)
         value_rect = QRect(rect.left() + prefix_width, rect.top(), rect.width() - prefix_width, rect.height())
         painter.drawText(value_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, value)
 
@@ -47,26 +50,63 @@ class CustomComboBox(QComboBox):
 
 
 class LabelSelection(CustomComboBox):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, prefix):
+        super().__init__(prefix)
+
+        self.BLUR_RADIUS = 15
+        self.OFFSET = 3
+        self.setupShadow()
+        self.setupAnimation()
+
+    def apply_dark_theme(self):
         self.setStyleSheet("""
             QComboBox {
-                background-color: #cbe7e3;
-                color: black;
-                border: 2px solid #cbe7e3;
+                background-color: #0a3b3b;
+                color: #eceff4;
                 border-radius: 12px;
                 padding: 8px;
                 font-size: 14px;
                 font-weight: bold;
-                width: 150px;
-                height: 20px;
+                min-width: 120px;
+                max-width: 120px;
+                height: 24px;
                 padding-right: 30px;
             }
             QComboBox::drop-down {
                 subcontrol-origin: padding;
                 subcontrol-position: center right;
                 height: 10px;
-                width: 5px;
+                width: 20px;
+                margin: 5px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #699191;
+                border: None;
+            }
+        """)
+        self.shadow.setColor(QColor(0, 117, 117, 200))
+        self.text_color = QColor("#eceff4")
+        self.update()
+
+    def apply_light_theme(self):
+        self.setStyleSheet("""
+            QComboBox {
+                background-color: #cbe7e3;
+                color: #3B4252;
+                border-radius: 12px;
+                padding: 8px;
+                font-size: 14px;
+                font-weight: bold;
+                min-width: 120px;
+                max-width: 120px;
+                height: 24px;
+                padding-right: 30px;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: center right;
+                height: 10px;
+                width: 20px;
                 margin: 5px;
             }
             QComboBox QAbstractItemView {
@@ -74,11 +114,9 @@ class LabelSelection(CustomComboBox):
                 border: None;
             }
         """)
-
-        self.BLUR_RADIUS = 15
-        self.OFFSET = 3
-        self.setupShadow()
-        self.setupAnimation()
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.text_color = QColor("#3B4252")
+        self.update()
 
     def setupShadow(self):
         self.shadow = QGraphicsDropShadowEffect()

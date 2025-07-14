@@ -1,42 +1,40 @@
+from PyQt6.QtWidgets import QPushButton, QGraphicsDropShadowEffect
 from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, pyqtProperty
 from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import QPushButton, QGraphicsDropShadowEffect
 
 
-class ToggleDarkmodeButton(QPushButton):
-    def __init__(self, main):
-        super().__init__()
-        self.main_window = main
-        self.clicked.connect(self.toggle_mode)
-        self.setFixedSize(40, 40)
-
+class ResetButton(QPushButton):
+    def __init__(self, text=""):
+        super().__init__(text)
         self.BLUR_RADIUS = 15
         self.OFFSET = 3
         self.setupShadow()
         self.setupAnimation()
 
-        self.setIcon()
+    def apply_dark_theme(self):
+        self.shadow.setColor(QColor(0, 117, 117, 200))
+        self.setStyleSheet("background: #0a3b3b;"
+                           "color: #eceff4;"
+                           "border-radius: 12px;"
+                           "font-size: 14px;"
+                           "height: 24px;"
+                           "padding: 8px;")
 
-    def toggle_mode(self):
-        self.main_window.toggle_darkmode()
-
-    def setIcon(self):
-        if self.main_window.dark_mode:
-            self.setText("☀️")
-            self.shadow.setColor(QColor(0, 117, 117, 200))
-            self.setStyleSheet("background-color: #0a3b3b;"
-                               "border-radius: 10px;")
-        else:
-            self.setText("🌙")
-            self.shadow.setColor(QColor(0, 0, 0, 80))
-            self.setStyleSheet("background-color: #cbe7e3;"
-                               "border-radius: 10px;")
+    def apply_light_theme(self):
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.setStyleSheet("background: #cbe7e3;"
+                           "color: #3B4252;"
+                           "border-radius: 12px;"
+                           "font-size: 14px;"
+                           "height: 20px;"
+                           "padding: 10px;")
 
     def setupShadow(self):
         self.shadow = QGraphicsDropShadowEffect()
         self.shadow.setBlurRadius(self.BLUR_RADIUS)
         self.shadow.setXOffset(self.OFFSET)
         self.shadow.setYOffset(self.OFFSET)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
         self.setGraphicsEffect(self.shadow)
 
     def setupAnimation(self):

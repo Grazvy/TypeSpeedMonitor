@@ -2,12 +2,13 @@ from datetime import datetime
 
 import numpy as np
 from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox, QWidget
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox, QWidget, QSpacerItem
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.views.TimeRangeSlider import TimeRangeSlider
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
+from src.views.LabelSelection import LabelSelection
 from src.utils import apply_dark_theme, apply_light_theme, save_config
 
 
@@ -30,6 +31,7 @@ class SummaryGraph(QFrame):
         dummy.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         dummy.setFixedWidth(0)
         controls_layout.addWidget(dummy)
+        controls_layout.addSpacerItem(QSpacerItem(40, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
 
         self.toggle = ToggleDarkmodeButton(self.main_window)
         controls_layout.addWidget(self.toggle)
@@ -37,7 +39,7 @@ class SummaryGraph(QFrame):
         self.slider = TimeRangeSlider(main.config["summary_of"])
         self.slider.rangeChanged.connect(self.set_interval)
 
-        self.label_selection = QComboBox()
+        self.label_selection = LabelSelection(prefix="interval: ")
         labels = ["day", "month", "year"]
         self.label_selection.addItems(labels)
         self.label_selection.setCurrentIndex(labels.index(main.config["summary_of"]))
@@ -79,11 +81,11 @@ class SummaryGraph(QFrame):
 
     def apply_style(self):
         if self.main_window.dark_mode:
-            self.label_selection.setStyleSheet("background: #0a3b3b; color: #eceff4;")
+            self.label_selection.apply_dark_theme()
             self.slider.apply_dark_theme()
             self.color = '#699191'
         else:
-            self.label_selection.setStyleSheet("background: #cbe7e3; color: black;")
+            self.label_selection.apply_light_theme()
             self.slider.apply_light_theme()
             self.color = 'steelblue'
 

@@ -4,12 +4,13 @@ from datetime import datetime, timedelta
 import numpy as np
 from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QHBoxLayout, QToolTip
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QToolTip, QSpacerItem
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
 from src.views.LabelSelection import LabelSelection
+from src.views.ResetButton import ResetButton
 from src.utils import apply_dark_theme, apply_light_theme, save_config
 
 SPP = 1 / 5
@@ -38,22 +39,25 @@ class WPMGraph(QFrame):
         layout = QVBoxLayout(self)
         layout.addStretch()
         controls_layout = QHBoxLayout()
+        controls_layout.addSpacerItem(QSpacerItem(70, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
 
         self.toggle = ToggleDarkmodeButton(self.main_window)
+
         controls_layout.addWidget(self.toggle)
         controls_layout.addStretch()
 
         labels = ["1 min", "5 min", "15 min", "30 min", "60 min", "1 day", "1 week", "1 month", "1 year"]
         all_mults = [1, 5, 15, 30, 60, 24 * 60, 7 * 24 * 60, 30 * 24 * 60, 12 * 30 * 24 * 60]
-        self.label_selection = LabelSelection()
+        self.label_selection = LabelSelection(prefix="step size: ")
         self.label_selection.addItems(labels)
         self.label_selection.setCurrentIndex(all_mults.index(mult))
         self.label_selection.currentTextChanged.connect(self.update_mult)
         controls_layout.addWidget(self.label_selection)
 
-        self.back_to_start = QPushButton("reset position")
+        self.back_to_start = ResetButton("reset position")
         self.back_to_start.clicked.connect(self.reset_position)
         controls_layout.addWidget(self.back_to_start)
+        controls_layout.addSpacerItem(QSpacerItem(20, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
 
         layout.addLayout(controls_layout)
 
@@ -75,23 +79,12 @@ class WPMGraph(QFrame):
 
     def apply_style(self):
         if self.main_window.dark_mode:
-            #self.label_selection.setStyleSheet("background: #0a3b3b; color: #eceff4;")
-            self.back_to_start.setStyleSheet("background: #0a3b3b; "
-                                             "color: #eceff4"
-                                             "border-radius: 12px;"
-                                             "font-size: 14px;"
-                                             "font-weight: bold;"
-                                             "height: 20px;"
-                                             "padding: 8px;")
+            self.label_selection.apply_dark_theme()
+            self.back_to_start.apply_dark_theme()
             self.color = '#699191'
         else:
-            #self.label_selection.setStyleSheet("background: #cbe7e3; color: black;")
-            self.back_to_start.setStyleSheet("background: #cbe7e3;"
-                                             "color: black;"
-                                             "border-radius: 12px;"
-                                             "font-size: 14px;"
-                                             "height: 20px;"
-                                             "padding: 10px;")
+            self.label_selection.apply_light_theme()
+            self.back_to_start.apply_light_theme()
             self.color = 'steelblue'
 
         self.toggle.setIcon()

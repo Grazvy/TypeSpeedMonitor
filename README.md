@@ -10,7 +10,6 @@ pip install matplotlib
 
 todo:
 
-- clean up UI-layout
 - make executables
 
 - default config.json
