@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
 from src.views.LabelSelection import LabelSelection
 from src.views.ResetButton import ResetButton
+from src.views.InfoButton import InfoButton
 from src.utils import apply_dark_theme, apply_light_theme, save_config
 
 SPP = 1 / 5
@@ -33,9 +34,6 @@ class WPMGraph(QFrame):
         self.setContentsMargins(26, 57, 15, 26)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
-        self.setToolTip("scroll to change the interval")
-        QToolTip.setFont(QFont("Arial", 18))
-
         layout = QVBoxLayout(self)
         layout.addStretch()
         controls_layout = QHBoxLayout()
@@ -57,6 +55,10 @@ class WPMGraph(QFrame):
         self.back_to_start = ResetButton("reset position")
         self.back_to_start.clicked.connect(self.reset_position)
         controls_layout.addWidget(self.back_to_start)
+
+        self.info_button = InfoButton()
+        controls_layout.addWidget(self.info_button)
+
         controls_layout.addSpacerItem(QSpacerItem(20, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
 
         layout.addLayout(controls_layout)
@@ -64,6 +66,8 @@ class WPMGraph(QFrame):
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
         self.canvas.setFixedHeight(600)
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
+        self.canvas.setToolTip("scroll to change the interval")
+        QToolTip.setFont(QFont("Arial", 18))
         layout.addWidget(self.canvas)
         layout.addStretch()
 
@@ -81,10 +85,12 @@ class WPMGraph(QFrame):
         if self.main_window.dark_mode:
             self.label_selection.apply_dark_theme()
             self.back_to_start.apply_dark_theme()
+            self.info_button.apply_dark_theme()
             self.color = '#699191'
         else:
             self.label_selection.apply_light_theme()
             self.back_to_start.apply_light_theme()
+            self.info_button.apply_light_theme()
             self.color = 'steelblue'
 
         self.toggle.setIcon()
@@ -95,7 +101,6 @@ class WPMGraph(QFrame):
         self.plot()
         super().resizeEvent(event)
 
-
     def update_plot(self):
         if not self.custom_interval:
             self.interval_end = time.time() + self.bin_size
@@ -103,7 +108,7 @@ class WPMGraph(QFrame):
 
     def on_scroll(self, event):
         self.custom_interval = True
-        self.setToolTip("")
+        self.canvas.setToolTip("")
         direction = event.step  # +1 for up, -1 for down
         self.interval_end += -direction * self.mult
         self.plot()
