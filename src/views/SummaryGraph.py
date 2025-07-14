@@ -19,8 +19,9 @@ class SummaryGraph(QFrame):
         self.color = '#699191' if main.dark_mode else 'steelblue'
 
         self.setStyleSheet("background: transparent;")
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         layout = QVBoxLayout(self)
+        layout.addStretch()
         controls = QWidget()
         controls_layout = QHBoxLayout()
 
@@ -33,7 +34,7 @@ class SummaryGraph(QFrame):
         self.toggle = ToggleDarkmodeButton(self.main_window)
         controls_layout.addWidget(self.toggle)
 
-        self.slider = TimeRangeSlider()
+        self.slider = TimeRangeSlider(main.config["summary_of"])
         self.slider.rangeChanged.connect(self.set_interval)
 
         self.label_selection = QComboBox()
@@ -50,8 +51,9 @@ class SummaryGraph(QFrame):
         layout.addWidget(controls)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
-        self.canvas.setMaximumHeight(500)
+        self.canvas.setFixedHeight(600)
         layout.addWidget(self.canvas)
+        layout.addStretch()
 
         self.main_window.modeToggled.connect(self.apply_style)
 
@@ -98,7 +100,6 @@ class SummaryGraph(QFrame):
     def plot_summary(self, bin_width=5):
         self.canvas.figure.clear()
         ax = self.canvas.figure.add_subplot(111)
-
         data = self.db.read_data(self.start_time, self.end_time)
         wpm_values = [val for _, val in data if val is not None]
 
@@ -127,9 +128,9 @@ class SummaryGraph(QFrame):
                                x_step)
             ax.set_xticks(xticks)
 
-            ax.set_title(f"Distribution from {self.title_from} to {self.title_to}", fontsize=13, fontweight='bold')
-            ax.set_xlabel("WPM")
-            ax.set_ylabel("Percentage (%)")
+            ax.set_title(f"distribution from {self.title_from} to {self.title_to}", fontsize=12, fontweight='bold')
+            ax.set_xlabel("WPM", fontsize=12)
+            ax.set_ylabel("Percentage (%)", fontsize=12)
             ax.grid(axis='y', alpha=0.6, linewidth=1.2, color='gray')
 
             max_y = max(percentages) * 1.1
@@ -144,4 +145,4 @@ class SummaryGraph(QFrame):
             apply_light_theme(ax)
 
         self.canvas.figure.tight_layout()
-        self.canvas.draw_idle()
+        self.canvas.draw()

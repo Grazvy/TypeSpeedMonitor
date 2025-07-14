@@ -2,9 +2,9 @@ import time
 from datetime import datetime, timedelta
 
 import numpy as np
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import QTimer
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout, QToolTip, QMessageBox
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QPushButton, QComboBox, QHBoxLayout, QToolTip
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -29,12 +29,13 @@ class WPMGraph(QFrame):
 
         self.setStyleSheet("background: transparent;")
         self.setContentsMargins(26, 57, 15, 26)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self.setToolTip("scroll to change the interval")
         QToolTip.setFont(QFont("Arial", 18))
 
         layout = QVBoxLayout(self)
+        layout.addStretch()
         controls_layout = QHBoxLayout()
 
         self.toggle = ToggleDarkmodeButton(self.main_window)
@@ -54,11 +55,10 @@ class WPMGraph(QFrame):
         layout.addLayout(controls_layout)
 
         self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
-        self.canvas.setMinimumSize(600, 500)
-        self.canvas.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        self.canvas.setFocus()
+        self.canvas.setFixedHeight(600)
         self.canvas.mpl_connect("scroll_event", self.on_scroll)
         layout.addWidget(self.canvas)
+        layout.addStretch()
 
         self.main_window.modeToggled.connect(self.apply_style)
 
@@ -87,6 +87,7 @@ class WPMGraph(QFrame):
         self.interval_size = self.width() * self.seconds_per_pixel * self.mult
         self.plot()
         super().resizeEvent(event)
+
 
     def update_plot(self):
         if not self.custom_interval:
@@ -254,5 +255,5 @@ class WPMGraph(QFrame):
         else:
             apply_light_theme(ax)
 
-        self.canvas.figure.tight_layout
-        self.canvas.draw_idle()
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()

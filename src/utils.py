@@ -23,7 +23,6 @@ def init_database():
 
 
 def get_config_path():
-    # Use application directory whether run normally or with PyInstaller
     if getattr(sys, 'frozen', False):
         base_dir = sys._MEIPASS  # PyInstaller temp directory
         user_dir = os.path.dirname(sys.executable)
@@ -35,7 +34,6 @@ def get_config_path():
 
 def load_config():
     path = get_config_path()
-    print(path)
     if os.path.exists(path):
         with open(path, 'r') as f:
             return json.load(f)

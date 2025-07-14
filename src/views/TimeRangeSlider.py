@@ -10,7 +10,7 @@ import time
 class TimeRangeSlider(QWidget):
     rangeChanged = pyqtSignal(float, float)
 
-    def __init__(self, interval="day"):
+    def __init__(self, interval):
         super().__init__()
         self.setMouseTracking(True)
 
