@@ -24,12 +24,42 @@ def init_database():
 
 def get_config_path():
     if getattr(sys, 'frozen', False):
-        base_dir = sys._MEIPASS  # PyInstaller temp directory
-        user_dir = os.path.dirname(sys.executable)
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            # For config files, we want to use a persistent location
+            app_name = "TypeSpeedMonitor"
+            user_dir = user_data_dir(app_name)
+            os.makedirs(user_dir, exist_ok=True)
+        else:
+            # Other executable builders
+            user_dir = os.path.dirname(sys.executable)
     else:
+        # Running in development environment
         user_dir = os.path.dirname(os.path.abspath(__file__))
 
-    return os.path.join(user_dir, 'config.json')
+    config_path = os.path.join(user_dir, 'config.json')
+
+    # Create default config if it doesn't exist
+    if not os.path.exists(config_path):
+        create_default_config(config_path)
+
+    return config_path
+
+
+def create_default_config(config_path):
+    default_config = {
+        "dark_mode": False,
+        "mult": 15,
+        "summary_of": "day"
+    }
+
+    try:
+        import json
+        with open(config_path, 'w') as f:
+            json.dump(default_config, f, indent=4)
+        print(f"Created default config at: {config_path}")
+    except Exception as e:
+        print(f"Error creating default config: {e}")
 
 
 def load_config():
