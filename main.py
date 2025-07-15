@@ -2,7 +2,7 @@ import signal
 import sys
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtGui import QPixmap, QFont, QPainter, QLinearGradient, QColor
 from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QTabWidget, QSplashScreen
 
 from src.keyboard_handler import KeyboardHandler
@@ -63,15 +63,15 @@ class App(QWidget):
         tabs.addTab(wpm_graph, "Monitoring")
 
         # Placeholder widget for summary tab
-        summary_container = QWidget()
-        summary_container_layout = QVBoxLayout(summary_container)
-        tabs.addTab(summary_container, "Summary")
+        self.summary_container = QWidget()
+        self.summary_container_layout = QVBoxLayout(self.summary_container)
+        tabs.addTab(self.summary_container, "Summary")
 
         def on_tab_changed(index):
             if not self.summary_tab_loaded and tabs.tabText(index) == "Summary":
                 from src.views.SummaryGraph import SummaryGraph  # Lazy import
                 summary_graph = SummaryGraph(self, self.db)
-                summary_container_layout.addWidget(summary_graph)
+                self.summary_container_layout.addWidget(summary_graph)
                 self.summary_tab_loaded = True
 
         tabs.currentChanged.connect(on_tab_changed)
@@ -107,15 +107,24 @@ class App(QWidget):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    # Setup splash screen
-    splash_pix = QPixmap(400, 300)
+    # Setup splash screen with gradient
+    splash_pix = QPixmap(600, 400)
     splash_pix.fill(Qt.GlobalColor.transparent)
+    painter = QPainter(splash_pix)
+    gradient = QLinearGradient(0, 500, 600, 0)
+    gradient.setColorAt(0.2, QColor('#cbe7e3'))
+    gradient.setColorAt(1, QColor('#05999e'))
+    painter.fillRect(splash_pix.rect(), gradient)
+    painter.end()
 
     splash = QSplashScreen(splash_pix)
     splash.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.SplashScreen)
-    splash.showMessage("Loading TypeSpeedMonitor...", Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom,
-                       Qt.GlobalColor.black)
-    splash.setFont(QFont("Arial", 14))
+    splash.showMessage(
+        "Starting TypeSpeedMonitor...",
+        Qt.AlignmentFlag.AlignCenter,
+        QColor("#3B4252")
+    )
+    splash.setFont(QFont("Arial", 16))
     splash.show()
 
     # Process events so the splash screen is responsive

@@ -10,6 +10,7 @@ pip install matplotlib
 build executable
 ```
 pyinstaller --onefile --windowed \
+    --icon=resources/TSM_Icon.ico \
     --hidden-import PyQt6.QtCore \
     --hidden-import PyQt6.QtGui \
     --hidden-import PyQt6.QtWidgets \
