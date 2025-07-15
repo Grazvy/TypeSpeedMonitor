@@ -2,19 +2,21 @@ import signal
 import sys
 
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal
-from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QTabWidget
+from PyQt6.QtGui import QPixmap, QFont
+from PyQt6.QtWidgets import QVBoxLayout, QApplication, QWidget, QTabWidget, QSplashScreen
 
 from src.keyboard_handler import KeyboardHandler
 from src.db_handlers import DBReader
 from src.utils import init_database, load_config, save_config
 
 from src.views.WPMGraph import WPMGraph
-from src.views.SummaryGraph import SummaryGraph
 
 MIN_BIN_SIZE = 5
 
+
 class App(QWidget):
     modeToggled = pyqtSignal()
+
     def __init__(self):
         super().__init__()
         init_database()
@@ -25,6 +27,18 @@ class App(QWidget):
 
         self.keyboard_handler = KeyboardHandler(MIN_BIN_SIZE)
         self.keyboard_handler.start_monitoring()
+
+        self.summary_tab_loaded = False
+
+        timer = QTimer()
+        timer.singleShot(3000, self.post_init)
+
+    def post_init(self):
+        if not self.summary_tab_loaded:
+            from src.views.SummaryGraph import SummaryGraph
+            summary_graph = SummaryGraph(self, self.db)
+            self.summary_container_layout.addWidget(summary_graph)
+            self.summary_tab_loaded = True
 
     def init_ui(self):
         self.setWindowTitle("App")
@@ -48,8 +62,19 @@ class App(QWidget):
         wpm_graph = WPMGraph(self, self.db, bin_size=MIN_BIN_SIZE)
         tabs.addTab(wpm_graph, "Monitoring")
 
-        summary_graph = SummaryGraph(self, self.db)
-        tabs.addTab(summary_graph, "Summary")
+        # Placeholder widget for summary tab
+        summary_container = QWidget()
+        summary_container_layout = QVBoxLayout(summary_container)
+        tabs.addTab(summary_container, "Summary")
+
+        def on_tab_changed(index):
+            if not self.summary_tab_loaded and tabs.tabText(index) == "Summary":
+                from src.views.SummaryGraph import SummaryGraph  # Lazy import
+                summary_graph = SummaryGraph(self, self.db)
+                summary_container_layout.addWidget(summary_graph)
+                self.summary_tab_loaded = True
+
+        tabs.currentChanged.connect(on_tab_changed)
 
         layout.addWidget(tabs)
         self.setLayout(layout)
@@ -66,10 +91,13 @@ class App(QWidget):
     def set_style(self):
         if self.dark_mode:
             # dark arctic
-            self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.1 #004a4a, stop: 0.6 #082026);")
+            self.setStyleSheet(
+                f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.1 #004a4a, stop: 0.6 #082026);")
         else:
             # light aquatic
-            self.setStyleSheet(f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.3 #cbe7e3, stop: 0.85 #05999e);")
+            self.setStyleSheet(
+                f"background-color: qlineargradient(x1: 0, y1: 1, stop: 0.3 #cbe7e3, stop: 0.85 #05999e);")
+
     def closeEvent(self, event):
         self.keyboard_handler.stop()
         self.db.close()
@@ -78,11 +106,28 @@ class App(QWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    # Setup splash screen
+    splash_pix = QPixmap(400, 300)
+    splash_pix.fill(Qt.GlobalColor.transparent)
+
+    splash = QSplashScreen(splash_pix)
+    splash.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.SplashScreen)
+    splash.showMessage("Loading TypeSpeedMonitor...", Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom,
+                       Qt.GlobalColor.black)
+    splash.setFont(QFont("Arial", 14))
+    splash.show()
+
+    # Process events so the splash screen is responsive
+    app.processEvents()
+
     window = App()
     window.show()
+    splash.finish(window)
 
     signal.signal(signal.SIGINT, lambda s, f: QApplication.quit())
 
+    # Keep event loop responsive
     timer = QTimer()
     timer.timeout.connect(lambda: None)
     timer.start(100)

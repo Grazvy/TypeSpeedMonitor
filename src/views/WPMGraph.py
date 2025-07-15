@@ -2,11 +2,9 @@ import time
 from datetime import datetime, timedelta
 
 import numpy as np
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QToolTip, QSpacerItem
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QToolTip, QSpacerItem, QWidget, QLabel
 
 from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
 from src.views.LabelSelection import LabelSelection
@@ -63,12 +61,30 @@ class WPMGraph(QFrame):
 
         layout.addLayout(controls_layout)
 
-        self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
-        self.canvas.setFixedHeight(600)
-        self.canvas.mpl_connect("scroll_event", self.on_scroll)
-        self.canvas.setToolTip("scroll to change the interval")
-        QToolTip.setFont(QFont("Arial", 18))
-        layout.addWidget(self.canvas)
+        self.canvas_container = QWidget()
+        self.canvas_container.setFixedHeight(600)
+        self.canvas_container_layout = QVBoxLayout(self.canvas_container)
+        self.loading_label = QLabel("Loading...")
+        self.loading_label.setStyleSheet("font-size: 16px; color: gray;")
+        self.canvas_container_layout.addWidget(self.loading_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.canvas = None
+        layout.addWidget(self.canvas_container)
+
+        def init_canvas():
+            from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+            from matplotlib.figure import Figure
+            self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
+            self.canvas.setFixedHeight(600)
+            self.canvas.mpl_connect("scroll_event", self.on_scroll)
+            self.canvas.setToolTip("scroll to change the interval")
+            QToolTip.setFont(QFont("Arial", 18))
+
+            self.loading_label.hide()
+            self.canvas_container_layout.addWidget(self.canvas)
+            self.plot()
+
+        timer = QTimer()
+        timer.singleShot(1000, init_canvas)
         layout.addStretch()
 
         self.main_window.modeToggled.connect(self.apply_style)
@@ -108,7 +124,8 @@ class WPMGraph(QFrame):
 
     def on_scroll(self, event):
         self.custom_interval = True
-        self.canvas.setToolTip("")
+        if not self.canvas:
+            self.canvas.setToolTip("")
         direction = event.step  # +1 for up, -1 for down
         self.interval_end += -direction * self.mult
         self.plot()
@@ -158,6 +175,9 @@ class WPMGraph(QFrame):
 
 
     def plot(self):
+        if not self.canvas:
+            return
+
         last_bin = self.get_last_bin()
         interval_start = last_bin - self.interval_size
         time_bins = np.arange(interval_start, last_bin + self.bin_size, self.bin_size)

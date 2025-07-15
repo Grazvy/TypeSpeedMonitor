@@ -2,7 +2,7 @@ from datetime import datetime
 
 import numpy as np
 from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QComboBox, QWidget, QSpacerItem
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QSizePolicy, QHBoxLayout, QWidget, QSpacerItem
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
