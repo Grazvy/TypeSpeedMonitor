@@ -28,6 +28,26 @@ build .dmg file
 hdiutil create -volname "TypeSpeedMonitor" -srcfolder dist/TypeSpeedMonitor.app -ov -format UDZO TypeSpeedMonitor.dmg    
 ```
 todo:
+- try
+pyinstaller --onedir --windowed \
+    --icon=resources/TSM_Icon_V2.ico \
+    --hidden-import PyQt6.QtCore \
+    --hidden-import PyQt6.QtGui \
+    --hidden-import PyQt6.QtWidgets \
+    --hidden-import pynput \
+    --hidden-import pynput.keyboard \
+    --hidden-import pynput.mouse \
+    --hidden-import matplotlib \
+    --hidden-import matplotlib.backends.backend_qtagg \
+    --hidden-import appdirs \
+    --name "TypeSpeedMonitor" \
+    main.py
+- reduce icon size
+- permission settings guide
+- improve built
+- remove main-view from main.py
+- fix splash screen
+- fix tooltip not dissapearing
 
 - default config.json
 - draw dates on graph instead of title

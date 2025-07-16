@@ -3,6 +3,7 @@ import os
 import sqlite3
 import sys
 
+import Quartz
 from appdirs import user_data_dir
 
 
@@ -44,6 +45,31 @@ def get_config_path():
         create_default_config(config_path)
 
     return config_path
+
+
+def check_input_monitoring_trusted():   # also possible using keyboard_handler?
+    def _dummy_callback(proxy, type_, event, refcon):
+        return event
+
+    event_mask = Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown)
+
+    tap = Quartz.CGEventTapCreate(
+        Quartz.kCGSessionEventTap,  # Tap at the session level
+        Quartz.kCGHeadInsertEventTap,  # Insert at head to test priority
+        0,  # Active (not listen-only)
+        event_mask,
+        _dummy_callback,
+        None
+    )
+
+    if not tap:
+        return False
+
+    runLoopSource = Quartz.CFMachPortCreateRunLoopSource(None, tap, 0)
+    if not runLoopSource:
+        return False
+
+    return True
 
 
 def create_default_config(config_path):

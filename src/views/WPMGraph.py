@@ -10,7 +10,7 @@ from src.views.ToggleDarkmodeButton import ToggleDarkmodeButton
 from src.views.LabelSelection import LabelSelection
 from src.views.ResetButton import ResetButton
 from src.views.InfoButton import InfoButton
-from src.utils import apply_dark_theme, apply_light_theme, save_config
+from src.utils import apply_dark_theme, apply_light_theme, save_config, check_input_monitoring_trusted
 
 SPP = 1 / 5
 
@@ -33,6 +33,12 @@ class WPMGraph(QFrame):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         layout = QVBoxLayout(self)
+
+        if check_input_monitoring_trusted():
+            layout.addWidget(QLabel("Monitoring trusted"))
+        else:
+            layout.addWidget(QLabel("Monitoring not trusted"))
+
         layout.addStretch()
         controls_layout = QHBoxLayout()
         controls_layout.addSpacerItem(QSpacerItem(70, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
