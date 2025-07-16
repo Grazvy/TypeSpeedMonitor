@@ -10,7 +10,7 @@ pip install matplotlib
 build executable
 ```
 pyinstaller --onefile --windowed \
-    --icon=resources/TSM_Icon.ico \
+    --icon=resources/TSM_Icon_V2.ico \
     --hidden-import PyQt6.QtCore \
     --hidden-import PyQt6.QtGui \
     --hidden-import PyQt6.QtWidgets \
@@ -28,9 +28,6 @@ build .dmg file
 hdiutil create -volname "TypeSpeedMonitor" -srcfolder dist/TypeSpeedMonitor.app -ov -format UDZO TypeSpeedMonitor.dmg    
 ```
 todo:
-
-- make executables
-- make a splash screen?
 
 - default config.json
 - draw dates on graph instead of title

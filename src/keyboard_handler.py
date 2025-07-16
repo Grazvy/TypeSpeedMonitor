@@ -1,19 +1,10 @@
 import time
-from pynput import keyboard
 
 from src.db_handlers import DBWriter
 
 RECORDING_THRESHOLD = 1.0
 MIN_RECORDINGS = 8
-EXCLUDED_KEYS = {
-    keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r,
-    keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r,
-    keyboard.Key.cmd, keyboard.Key.cmd_l, keyboard.Key.cmd_r,
-    keyboard.Key.tab, keyboard.Key.enter, keyboard.Key.esc,
-    keyboard.Key.backspace, keyboard.Key.delete,
-    keyboard.Key.up, keyboard.Key.down, keyboard.Key.left, keyboard.Key.right,
-    keyboard.Key.home, keyboard.Key.end, keyboard.Key.page_up, keyboard.Key.page_down
-}
+EXCLUDED_KEYS = {}
 
 EXCEPTIONS = {
     '(', ')', '[', ']', '{', '}', '<', '>',
@@ -33,6 +24,17 @@ class KeyboardHandler:
         self.excluded_keys_pressed = set()
 
     def start_monitoring(self):
+        from pynput import keyboard
+        global EXCLUDED_KEYS
+        EXCLUDED_KEYS = {
+            keyboard.Key.ctrl, keyboard.Key.ctrl_l, keyboard.Key.ctrl_r,
+            keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r,
+            keyboard.Key.cmd, keyboard.Key.cmd_l, keyboard.Key.cmd_r,
+            keyboard.Key.tab, keyboard.Key.enter, keyboard.Key.esc,
+            keyboard.Key.backspace, keyboard.Key.delete,
+            keyboard.Key.up, keyboard.Key.down, keyboard.Key.left, keyboard.Key.right,
+            keyboard.Key.home, keyboard.Key.end, keyboard.Key.page_up, keyboard.Key.page_down
+        }
         #self.listener = keyboard.Listener(on_press=lambda key: self.on_press(key))
         self.listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         self.listener.start()
