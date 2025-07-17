@@ -52,6 +52,7 @@ iconutil -c icns icon.iconset
 build executable
 ```
 pyinstaller --onedir --windowed ^
+    --add-data "resources;resources" ^
     --icon=resources\icon.icns ^
     --hidden-import PyQt6.QtCore ^
     --hidden-import PyQt6.QtGui ^
