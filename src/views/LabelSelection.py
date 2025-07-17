@@ -19,8 +19,10 @@ class CustomComboBox(QComboBox):
         value = self.currentText()
 
         prefix_font = QFont("Arial", 14)
+        prefix_font.setPixelSize(14)
         prefix_font.setBold(False)
         value_font = QFont("Arial", 14)
+        value_font.setPixelSize(14)
         value_font.setBold(True)
 
         painter.setFont(prefix_font)

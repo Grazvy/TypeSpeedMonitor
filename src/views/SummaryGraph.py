@@ -31,7 +31,7 @@ class SummaryGraph(QFrame):
         dummy.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
         dummy.setFixedWidth(0)
         controls_layout.addWidget(dummy)
-        controls_layout.addSpacerItem(QSpacerItem(40, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
+        controls_layout.addSpacerItem(QSpacerItem(30, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Minimum))
 
         self.toggle = ToggleDarkmodeButton(self.main_window)
         controls_layout.addWidget(self.toggle)
@@ -89,7 +89,7 @@ class SummaryGraph(QFrame):
             self.slider.apply_light_theme()
             self.color = 'steelblue'
 
-        self.toggle.setIcon()
+        self.toggle.apply_style()
         self.plot_summary()
 
     def set_interval(self, start, end):

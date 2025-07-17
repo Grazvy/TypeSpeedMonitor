@@ -1,8 +1,8 @@
-from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, pyqtProperty
-from PyQt6.QtGui import QColor
+from PyQt6.QtCore import QPropertyAnimation, QEasingCurve, pyqtProperty, QSize
+from PyQt6.QtGui import QColor, QIcon
 from PyQt6.QtWidgets import QPushButton, QGraphicsDropShadowEffect
 
-
+from src.utils import get_resource_path
 class ToggleDarkmodeButton(QPushButton):
     def __init__(self, main):
         super().__init__()
@@ -15,22 +15,28 @@ class ToggleDarkmodeButton(QPushButton):
         self.setupShadow()
         self.setupAnimation()
 
-        self.setIcon()
+        self.apply_style()
 
     def toggle_mode(self):
         self.main_window.toggle_darkmode()
 
-    def setIcon(self):
+    def apply_style(self):
+        self.setText("")
+
         if self.main_window.dark_mode:
-            self.setText("☀️")
+            svg_path = get_resource_path("resources/sun.svg")
             self.shadow.setColor(QColor(0, 117, 117, 200))
             self.setStyleSheet("background-color: #0a3b3b;"
-                               "border-radius: 10px;")
+                                   "border-radius: 10px;")
         else:
-            self.setText("🌙")
+            svg_path = get_resource_path("resources/moon.svg")
             self.shadow.setColor(QColor(0, 0, 0, 80))
             self.setStyleSheet("background-color: #cbe7e3;"
-                               "border-radius: 10px;")
+                                   "border-radius: 10px;")
+
+        icon = QIcon(svg_path)
+        self.setIcon(icon)
+        self.setIconSize(QSize(20, 20))
 
     def setupShadow(self):
         self.shadow = QGraphicsDropShadowEffect()

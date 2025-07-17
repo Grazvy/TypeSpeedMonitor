@@ -23,6 +23,14 @@ def init_database():
     conn.close()
 
 
+def get_resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
 def get_config_path():
     if getattr(sys, 'frozen', False):
         if hasattr(sys, '_MEIPASS'):

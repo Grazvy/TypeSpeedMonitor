@@ -115,7 +115,7 @@ class WPMGraph(QFrame):
             self.info_button.apply_light_theme()
             self.color = 'steelblue'
 
-        self.toggle.setIcon()
+        self.toggle.apply_style()
         self.plot()
 
     def resizeEvent(self, event):

@@ -6,10 +6,14 @@ conda install anaconda::pyqt
 conda install conda-forge::pynput
 pip install appdirs
 pip install matplotlib
+conda install conda-forge::pyinstaller
 ```
+
+## Mac  
 build executable
 ```
 pyinstaller --onedir --windowed \
+    --add-data "resources:resources"
     --icon=resources/icon.icns \
     --hidden-import PyQt6.QtCore \
     --hidden-import PyQt6.QtGui \
@@ -42,6 +46,24 @@ sips -z 512 512   app_icon.png --out icon.iconset/icon_512x512.png
 cp app_icon.png icon.iconset/icon_512x512@2x.png
 
 iconutil -c icns icon.iconset
+```
+
+## Windows
+build executable
+```
+pyinstaller --onedir --windowed ^
+    --icon=resources\icon.icns ^
+    --hidden-import PyQt6.QtCore ^
+    --hidden-import PyQt6.QtGui ^
+    --hidden-import PyQt6.QtWidgets ^
+    --hidden-import pynput ^
+    --hidden-import pynput.keyboard ^
+    --hidden-import pynput.mouse ^
+    --hidden-import matplotlib ^
+    --hidden-import matplotlib.backends.backend_qtagg ^
+    --hidden-import appdirs ^
+    --name "TypeSpeedMonitor" ^
+    main.py
 ```
 
 todo:
