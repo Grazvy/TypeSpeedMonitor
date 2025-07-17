@@ -90,7 +90,7 @@ class WPMGraph(QFrame):
             self.plot()
 
         timer = QTimer()
-        timer.singleShot(1000, init_canvas)
+        timer.singleShot(3000, init_canvas)
         layout.addStretch()
 
         self.main_window.modeToggled.connect(self.apply_style)

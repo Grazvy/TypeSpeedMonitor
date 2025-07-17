@@ -46,7 +46,6 @@ pyinstaller --onedir --windowed \
 - permission settings guide
 - improve built
 - remove main-view from main.py
-- fix splash screen
 - fix tooltip not dissapearing
 
 - default config.json
