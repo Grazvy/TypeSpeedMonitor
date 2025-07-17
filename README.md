@@ -13,7 +13,7 @@ conda install conda-forge::pyinstaller
 build executable
 ```
 pyinstaller --onedir --windowed \
-    --add-data "resources:resources"
+    --add-data "resources:resources" \
     --icon=resources/icon.icns \
     --hidden-import PyQt6.QtCore \
     --hidden-import PyQt6.QtGui \
@@ -51,25 +51,24 @@ iconutil -c icns icon.iconset
 ## Windows
 build executable
 ```
-pyinstaller --onedir --windowed ^
-    --add-data "resources;resources" ^
-    --icon=resources\icon.icns ^
-    --hidden-import PyQt6.QtCore ^
-    --hidden-import PyQt6.QtGui ^
-    --hidden-import PyQt6.QtWidgets ^
-    --hidden-import pynput ^
-    --hidden-import pynput.keyboard ^
-    --hidden-import pynput.mouse ^
-    --hidden-import matplotlib ^
-    --hidden-import matplotlib.backends.backend_qtagg ^
-    --hidden-import appdirs ^
-    --name "TypeSpeedMonitor" ^
+pyinstaller --onedir --windowed `
+    --add-data "resources;resources" `
+    --icon=resources\icon.icns `
+    --hidden-import PyQt6.QtCore `
+    --hidden-import PyQt6.QtGui `
+    --hidden-import PyQt6.QtWidgets `
+    --hidden-import pynput `
+    --hidden-import pynput.keyboard `
+    --hidden-import pynput.mouse `
+    --hidden-import matplotlib `
+    --hidden-import matplotlib.backends.backend_qtagg `
+    --hidden-import appdirs `
+    --name "TypeSpeedMonitor" `
     main.py
 ```
 
 todo:
 
-- increase icon size
 - permission settings guide (apple)
   1. add accessibility permissions
   2. (if not working) add to applications
