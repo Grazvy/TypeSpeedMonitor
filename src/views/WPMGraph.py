@@ -34,10 +34,10 @@ class WPMGraph(QFrame):
 
         layout = QVBoxLayout(self)
 
-        if check_input_monitoring_trusted():
-            layout.addWidget(QLabel("Monitoring trusted"))
-        else:
-            layout.addWidget(QLabel("Monitoring not trusted"))
+        #if check_input_monitoring_trusted():
+        #    layout.addWidget(QLabel("Monitoring trusted"))
+        #else:
+        #    layout.addWidget(QLabel("Monitoring not trusted"))
 
         layout.addStretch()
         controls_layout = QHBoxLayout()
@@ -90,7 +90,7 @@ class WPMGraph(QFrame):
             self.plot()
 
         timer = QTimer()
-        timer.singleShot(3000, init_canvas)
+        timer.singleShot(2000, init_canvas)
         layout.addStretch()
 
         self.main_window.modeToggled.connect(self.apply_style)
