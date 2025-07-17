@@ -3,7 +3,6 @@ import os
 import sqlite3
 import sys
 
-import Quartz
 from appdirs import user_data_dir
 
 
@@ -56,6 +55,7 @@ def get_config_path():
 
 
 def check_input_monitoring_trusted():   # also possible using keyboard_handler?
+    import Quartz
     def _dummy_callback(proxy, type_, event, refcon):
         return event
 
