@@ -1,13 +1,22 @@
-from PyQt6.QtCore import QSize, Qt, QEvent
-from PyQt6.QtGui import QPixmap, QPainter, QColor, QFont, QIcon, QPainterPath, QBrush, QPen
-from PyQt6.QtWidgets import QPushButton, QStyle, QWidget, QVBoxLayout, QToolTip
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPainter, QColor, QPainterPath, QBrush, QPen
+from PyQt6.QtWidgets import QPushButton
 
 
 class InfoButton(QPushButton):
     def __init__(self):
         super().__init__()
         self.setFixedSize(30, 30)
-        self.setStyleSheet("border: none;")
+        self.setStyleSheet("""
+            QPushButton {
+                border: None;
+            }
+            QToolTip {
+                color: black;
+                background: #cbe7e3;
+                font-size: 12px;
+            }
+        """)
         self.setToolTip("Input is recorded if: \n • time between keystrokes is < 1 sec \n • at least 8 keystrokes in a 5 sec interval")
         self.circle_color = QColor("white")
         self.i_color = QColor("white")
@@ -66,26 +75,3 @@ class InfoButton(QPushButton):
         self.circle_color = QColor("#cbe7e3")
         self.i_color = QColor("#05999e")
         self.update()
-
-class InfoWidget(QPushButton):
-    def __init__(self):
-        super().__init__()
-        self.setFixedSize(40, 40)
-        self.setStyleSheet("border: none;")
-        self.setToolTip("Input is recorded if: \n • time between keystrokes is < 1 sec \n • at least 8 keystrokes in a 5 sec interval")
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-
-        path = QPainterPath()
-        path.addEllipse(5, 5, 35, 35)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QBrush(QColor("#cbe7e3")))
-        painter.drawPath(path)
-
-        # Draw "i"
-        painter.setPen(QColor("#05999e"))
-        painter.setBrush(QBrush(QColor("#05999e")))
-        painter.drawRect(21, 20, 3, 12)
-        painter.drawEllipse(21, 13, 3, 3)

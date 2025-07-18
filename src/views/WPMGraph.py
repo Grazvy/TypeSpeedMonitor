@@ -82,7 +82,7 @@ class WPMGraph(QFrame):
             self.canvas = FigureCanvas(Figure(figsize=(8, 4)))
             self.canvas.setFixedHeight(600)
             self.canvas.mpl_connect("scroll_event", self.on_scroll)
-            self.canvas.setToolTip("scroll to change the interval")
+            self.canvas.setToolTip("scroll to change current position")
             QToolTip.setFont(QFont("Arial", 18))
 
             self.loading_label.hide()
@@ -130,7 +130,7 @@ class WPMGraph(QFrame):
 
     def on_scroll(self, event):
         self.custom_interval = True
-        if not self.canvas:
+        if self.canvas:
             self.canvas.setToolTip("")
         direction = event.step  # +1 for up, -1 for down
         self.interval_end += -direction * self.mult

@@ -78,9 +78,6 @@ todo:
   4. (if not working) delete both permission instances (-)
   5. restart app
   6. add accessibility and input monitoring permission again
-- fix tooltip not disheartening
-- wrap .exe in installer
-- fix windows tooltip
 - cleanup README
 
 - default config.json
