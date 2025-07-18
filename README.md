@@ -14,6 +14,7 @@ build executable
 ```
 pyinstaller --onedir --windowed \
     --add-data "resources:resources" \
+    --add-data "LICENSE:." \
     --icon=resources/icon.icns \
     --hidden-import PyQt6.QtCore \
     --hidden-import PyQt6.QtGui \
@@ -53,6 +54,7 @@ build executable
 ```
 pyinstaller --onedir --windowed `
     --add-data "resources;resources" `
+    --add-data "LICENSE;." `
     --icon=resources\icon.icns `
     --hidden-import PyQt6.QtCore `
     --hidden-import PyQt6.QtGui `
@@ -77,6 +79,9 @@ todo:
   5. restart app
   6. add accessibility and input monitoring permission again
 - fix tooltip not disheartening
+- wrap .exe in installer
+- fix windows tooltip
+- cleanup README
 
 - default config.json
 - draw dates on graph instead of title
