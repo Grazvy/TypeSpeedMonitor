@@ -12,7 +12,7 @@ conda install conda-forge::pyinstaller
 ## Mac  
 build executable
 ```
-pyinstaller --onedir --windowed \
+pyinstaller --onedir --windowed --noconfirm\
     --add-data "resources:resources" \
     --add-data "LICENSE:." \
     --icon=resources/icon.icns \
@@ -52,7 +52,7 @@ iconutil -c icns icon.iconset
 ## Windows
 build executable
 ```
-pyinstaller --onedir --windowed `
+pyinstaller --onedir --windowed --noconfirm`
     --add-data "resources;resources" `
     --add-data "LICENSE;." `
     --icon=resources\icon.icns `
@@ -87,3 +87,5 @@ todo:
 - more styles
 - performance analysis and optimization
 - reset db setting
+- time series summary graph
+- ensure single instance only 

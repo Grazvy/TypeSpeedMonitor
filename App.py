@@ -1,10 +1,10 @@
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QOperatingSystemVersion
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QTabWidget
 
 from src.keyboard_handler import KeyboardHandler
 from src.db_handlers import DBReader
-from src.utils import init_database, load_config, save_config
+from src.utils import init_database, load_config, save_config, get_resource_path
 
 from src.views.WPMGraph import WPMGraph
 
@@ -38,7 +38,9 @@ class App(QWidget):
             self.summary_tab_loaded = True
 
     def init_ui(self):
-        self.setWindowTitle("App")
+        self.setWindowTitle("TypeSpeedMonitor")
+        icon_path = get_resource_path("resources/icon.iconset/icon_128x128.png")
+        self.setWindowIcon(QIcon(icon_path))
         self.setGeometry(0, 0, 1200, 800)
 
         # Main layout
