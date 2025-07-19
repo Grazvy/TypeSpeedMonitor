@@ -3,33 +3,20 @@ To download and run the application, check out the latest release section.
 
 ### Screenshots
 
-<div style="display: flex; justify-content: flex-start; gap: 20px;">
-
-  <div style="text-align: center;">
-    <p><strong>Monitoring</strong></p>
-    <img src="resources/screenshots/monitor_dark.png" alt="Main Screen" width="400"/>
-  </div>
-
-  <div style="text-align: center;">
-    <p><strong>Summary</strong></p>
-    <img src="resources/screenshots/summary_dark.png" alt="Settings Panel" width="400"/>
-  </div>
-
-</div>
-
-<br></br>
-
-<div style="display: flex; justify-content: flex-start; gap: 20px;">
-
-  <div style="text-align: center;">
-    <img src="resources/screenshots/monitor_light.png" alt="Main Screen" width="400"/>
-  </div>
-
-  <div style="text-align: center;">
-    <img src="resources/screenshots/summary_light.png" alt="Settings Panel" width="400"/>
-  </div>
-
-</div>
+<table>
+    <tr>
+    <td align="center"><strong>Monitoring</strong></td>
+    <td align="center"><strong>Summary</strong></td>
+  </tr>
+  <tr>
+    <td><img src="resources/screenshots/monitor_dark.png" alt="Main Screen" width="500"/></td>
+    <td><img src="resources/screenshots/summary_dark.png" alt="Settings Panel" width="500"/></td>
+  </tr>
+    <tr>
+    <td><img src="resources/screenshots/monitor_light.png" alt="Main Screen" width="500"/></td>
+    <td><img src="resources/screenshots/summary_light.png" alt="Settings Panel" width="500"/></td>
+  </tr>
+</table>
 
 ## Development
 
