@@ -18,6 +18,7 @@ class WPMGraph(QFrame):
     def __init__(self, main, db, bin_size):
         super().__init__()
         self.main_window = main
+        self.is_paused = False
         mult = main.config["mult"]
         self.color = '#699191' if main.dark_mode else 'steelblue'
         self.mult = mult    # normalized = one minute
@@ -101,7 +102,17 @@ class WPMGraph(QFrame):
         # auto-refresh
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_plot)
-        self.timer.start(2_000)
+        self.timer.start(2000)
+    def pause(self):
+        if not self.is_paused:
+            self.timer.stop()
+            self.is_paused = True
+
+    def resume(self):
+        if self.is_paused:
+            self.update_plot()
+            self.timer.start(2000)
+            self.is_paused = False
 
     def apply_style(self):
         if self.main_window.dark_mode:
@@ -129,6 +140,9 @@ class WPMGraph(QFrame):
             self.plot()
 
     def on_scroll(self, event):
+        if self.is_paused:
+            return
+
         self.custom_interval = True
         if self.canvas:
             self.canvas.setToolTip("")

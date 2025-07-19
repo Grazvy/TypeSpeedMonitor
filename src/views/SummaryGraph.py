@@ -17,6 +17,7 @@ class SummaryGraph(QFrame):
         super().__init__()
         self.db = db
         self.main_window = main
+        self.is_paused = False
         self.color = '#699191' if main.dark_mode else 'steelblue'
 
         self.setStyleSheet("background: transparent;")
@@ -70,9 +71,20 @@ class SummaryGraph(QFrame):
         # initial plot and theme setting
         self.apply_style()
 
-        timer = QTimer(self)
-        timer.timeout.connect(self.plot_summary)
-        timer.start(500)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.plot_summary)
+        self.timer.start(500)
+
+
+    def pause(self):
+        if not self.is_paused:
+            self.timer.stop()
+            self.is_paused = True
+
+    def resume(self):
+        if self.is_paused:
+            self.timer.start(500)
+            self.is_paused = False
 
     def update_slider(self, text):
         self.slider.update_format(text)

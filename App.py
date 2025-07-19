@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QOperatingSystemVersion
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QOperatingSystemVersion, QEvent
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6.QtWidgets import QVBoxLayout, QWidget, QTabWidget
 
@@ -25,17 +25,20 @@ class App(QWidget):
         self.keyboard_handler = KeyboardHandler(MIN_BIN_SIZE)
         self.keyboard_handler.start_monitoring()
 
-        self.summary_tab_loaded = False
+        self.summary_graph = None
 
         timer = QTimer()
         timer.singleShot(10000, self.post_init)
 
+        self.focus_timer = QTimer()
+        self.focus_timer.timeout.connect(self.check_focus)
+        self.focus_timer.start(1000)
+
     def post_init(self):
-        if not self.summary_tab_loaded:
+        if self.summary_graph is None:
             from src.views.SummaryGraph import SummaryGraph
-            summary_graph = SummaryGraph(self, self.db)
-            self.summary_container_layout.addWidget(summary_graph)
-            self.summary_tab_loaded = True
+            self.summary_graph = SummaryGraph(self, self.db)
+            self.summary_container_layout.addWidget(self.summary_graph)
 
     def init_ui(self):
         self.setWindowTitle("TypeSpeedMonitor")
@@ -48,8 +51,8 @@ class App(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.tabs = QTabWidget()
-        wpm_graph = WPMGraph(self, self.db, bin_size=MIN_BIN_SIZE)
-        self.tabs.addTab(wpm_graph, "Monitoring")
+        self.wpm_graph = WPMGraph(self, self.db, bin_size=MIN_BIN_SIZE)
+        self.tabs.addTab(self.wpm_graph, "Monitoring")
 
         # Placeholder widget for summary tab
         self.summary_container = QWidget()
@@ -57,11 +60,10 @@ class App(QWidget):
         self.tabs.addTab(self.summary_container, "Summary")
 
         def on_tab_changed(index):
-            if not self.summary_tab_loaded and self.tabs.tabText(index) == "Summary":
+            if self.summary_graph is None and self.tabs.tabText(index) == "Summary":
                 from src.views.SummaryGraph import SummaryGraph  # Lazy import
-                summary_graph = SummaryGraph(self, self.db)
-                self.summary_container_layout.addWidget(summary_graph)
-                self.summary_tab_loaded = True
+                self.summary_graph = SummaryGraph(self, self.db)
+                self.summary_container_layout.addWidget(self.summary_graph)
 
         self.tabs.currentChanged.connect(on_tab_changed)
 
@@ -69,6 +71,16 @@ class App(QWidget):
         self.setLayout(layout)
 
         self.set_style()
+
+    def check_focus(self):
+        if self.isActiveWindow():
+            self.wpm_graph.resume()
+            if self.summary_graph:
+                self.summary_graph.resume()
+        else:
+            self.wpm_graph.pause()
+            if self.summary_graph:
+                self.summary_graph.pause()
 
     def toggle_darkmode(self):
         self.dark_mode = not self.dark_mode
