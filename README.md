@@ -62,7 +62,7 @@ iconutil -c icns icon.iconset
 ## Mac  
 build executable
 ```
-pyinstaller --onedir --windowed --noconfirm\
+pyinstaller --onedir --windowed --noconfirm \
     --add-data "resources:resources" \
     --add-data "LICENSE:." \
     --icon=resources/icon.icns \
@@ -86,7 +86,7 @@ hdiutil create -volname "TypeSpeedMonitor" -srcfolder dist/TypeSpeedMonitor.app 
 ## Windows
 build executable
 ```
-pyinstaller --onedir --windowed --noconfirm`
+pyinstaller --onedir --windowed --noconfirm `
     --add-data "resources;resources" `
     --add-data "LICENSE;." `
     --icon=resources\icon.icns `
