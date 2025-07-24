@@ -15,29 +15,34 @@
     window.googlefc.ccpa = window.googlefc.ccpa || {};
     window.googlefc.ccpa.hasStorageAccess = true;
   </script>
-  <script async src="https://fundingchoicesmessages.google.com/i/pub-4031003123321802?ers=1" nonce="YOUR_NONCE_HERE"></script>
-  <script nonce="YOUR_NONCE_HERE">(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script>
+  <script async src="https://fundingchoicesmessages.google.com/i/pub-4031003123321802?ers=1"></script>
+  <script>(function() {function signalGooglefcPresent() {if (!window.frames['googlefcPresent']) {if (document.body) {const iframe = document.createElement('iframe'); iframe.style = 'width: 0; height: 0; border: none; z-index: -1000; left: -1000px; top: -1000px;'; iframe.style.display = 'none'; iframe.name = 'googlefcPresent'; document.body.appendChild(iframe);} else {setTimeout(signalGooglefcPresent, 0);}}}signalGooglefcPresent();})();</script>
 
   <style>
     body {
       font-family: sans-serif;
+      margin: 0;
       padding: 2rem;
-      background: linear-gradient(to bottom, #004a4a 0%, #082026 100%);
+      background: linear-gradient(to bottom, #004a4a 25%, #082026 100%);
       min-height: 100vh;
       color: #ffffff;
       display: flex;
       justify-content: center;
       align-items: center;
+      box-sizing: border-box;
+      overflow: hidden;
     }
     .container {
       background: rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
       border-radius: 15px;
-      padding: 3rem;
-      max-width: 600px;
-      width: 100%;
+      padding: 4rem;
+      max-width: 800px;
+      width: 90%;
       border: 1px solid rgba(255, 255, 255, 0.2);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      max-height: 90vh;
+      overflow-y: auto;
     }
     .section {
       margin-bottom: 2rem;
@@ -94,7 +99,7 @@
       margin: 5% auto;
       padding: 30px;
       border-radius: 15px;
-      width: 90%;
+      width: 100%;
       max-width: 600px;
       max-height: 80vh;
       overflow-y: auto;
@@ -150,18 +155,66 @@
       <span class="close" onclick="closePrivacyModal()">&times;</span>
       <h2>Privacy</h2>
 
-      <h3>todo</h3>
-      <p>todo</p>
+      <h3>Application</h3>
+      <p>Security and privacy protection is the most important aspect of developing TypeSpeedMonitor, since creating
+        typing speed statistics requires knowledge about the type of keys pressed, which can be used maliciously to
+        access private information. For this reason, we made this project open source.</p>
+      <p>The following points show how your privacy preserved:</p>
 
-      <h3>todo</h3>
-      <p>todo:</p>
+      <h4>1. Input processing</h4>
+      <p>A pressed key triggers the event handler which executes the following steps:</p>
       <ul>
-        <li>todo</li>
-        <li>todo</li>
+        <li>Check if the key type is a character/symbol or a special key</li>
+        <li>A character/symbol should be included in the WPM statistics, so the time difference to the previous key
+          press is determined</li>
+        <li>Once the current time enters a new 5-second interval, all previous recordings are aggregated and the mean is
+          stored in the database</li>
       </ul>
 
+      <h4>2. Only aggregated time data is stored</h4>
+      <p>TypeSpeedMonitor does not store any specific keys pressed. It only collects the time difference between
+        keys pressed, aggregates the mean of a 5-second interval and stores the value with the current timestamp in a
+        local sqlite database.</p>
+      <p>In other words, the application only contains the time difference of all your keystrokes within the current
+      5-second interval and the database only contains the aggregated mean of each recorded 5-second interval. </p>
+
+      <h4>3. Data stays local</h4>
+      <p>The application runs local only, no connection to the internet. All the data is stored in a local sqlite
+      database, which can also be accessed in the corresponding application folder.</p>
+
+      <h4>4. Passwords don't trigger event listener (Mac)</h4>
+      <p>The application runs with user privileges, therefore it cannot receive keystrokes during password inputs or
+        similar actions when Secure Keyboard Entry is enabled.</p>
+
+      <p><strong>Additionally:</strong> If we see that this application gains more attention, we will invest our money
+        for code-signing to provide additional protection through confirmation of our identities.</p>
+
+      <h3>Website</h3>
+      <p>
+        This website uses Google Analytics to track anonymous usage data, such as which pages are visited and how often.
+      </p>
+      <p>
+        We also use Google AdSense to display advertisements. AdSense may use cookies to serve personalized ads based on your interests and browsing history.
+      </p>
+      <p>
+        Download button clicks are tracked anonymously to understand which versions are most used (macOS vs. Windows).
+      </p>
+      <p>
+        No personal information (such as names, emails, or IP addresses) is stored or shared by us directly.
+      </p>
+      <p>
+        By using this site, you consent to the use of cookies and data collection through third-party services.
+      </p>
+      <p>
+        For more information, see:
+        <ul>
+          <li><a href="https://policies.google.com/privacy" style="color: blue;">Google Privacy Policy</a></li>
+          <li><a href="https://policies.google.com/technologies/ads" style="color: blue;">Google Ad Technologies</a></li>
+        </ul>
+      </p>
+
       <h3>Contact</h3>
-      <p>For questions about the privacy, please contact us per mail: grvds.lgn@gmail.com.</p>
+      <p>For questions about the privacy, please contact us per mail: grvds.lgn@gmail.com</p>
 
       <p><small>Last updated: July 2025</small></p>
     </div>
