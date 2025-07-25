@@ -1,5 +1,5 @@
 ## TypeSpeedMonitor
-To download and run the application, check out the latest release section.
+To download and run the application, check out the latest release section or our website: https://typespeedmonitor.netlify.app
 
 ### Screenshots
 
@@ -20,7 +20,7 @@ To download and run the application, check out the latest release section.
 
 ## Development
 
-environment setup
+environment setup (Python 3.10)
 ```
 conda install anaconda::pyqt 
 conda install conda-forge::pynput
