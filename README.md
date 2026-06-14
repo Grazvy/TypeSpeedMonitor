@@ -1,4 +1,6 @@
 ## TypeSpeedMonitor
+TypeSpeedMonitor is an open-source application that tracks your WPM while doing every day tasks, providing a better insight into your typing speed than classic testing environments.
+
 To download and run the application, check out the latest release section or our website: https://typespeedmonitor.netlify.app
 
 ### Screenshots
